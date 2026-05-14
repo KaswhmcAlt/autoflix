@@ -3,15 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#e50914">
-    <title>AutoFlix</title>
+    <title>Kasen Stream</title>
+    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Kasen%20Stream%22,%22short_name%22:%22K-Stream%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22#141414%22,%22theme_color%22:%22#141414%22,%22icons%22:[{%22src%22:%22https://i.ibb.co/67wTJd9R/pngimg-com-netflix-PNG11.png%22,%22sizes%22:%22192x192%22,%22type%22:%22image/png%22}]}">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="manifest" href="manifest.json">
-    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .movie-card { transition: transform 0.3s ease; cursor: pointer; min-width: 160px; height: 240px; }
+        .movie-card:hover { transform: scale(1.1); z-index: 20; }
+        #navbar.scrolled { background-color: #141414; }
+    </style>
 </head>
-<body class="bg-black text-white">
-    <div id="app"></div>
-    <script src="js/app.js"></script>
+<body class="bg-[#141414] text-white font-sans overflow-x-hidden">
+
+    <nav id="navbar" class="fixed top-0 w-full z-50 transition-all p-4 flex justify-between items-center bg-gradient-to-b from-black/80 to-transparent">
+        <img src="https://i.ibb.co/67wTJd9R/pngimg-com-netflix-PNG11.png" class="h-6 md:h-8 ml-4" alt="Logo">
+        <div class="mr-4">
+            <input type="text" id="searchBar" placeholder="Search movies..." class="bg-black/50 border border-gray-600 rounded px-3 py-1 text-sm focus:outline-none focus:border-white w-40 md:w-64">
+        </div>
+    </nav>
+
+    <div id="hero" class="relative h-[70vh] md:h-[85vh] w-full bg-cover bg-top flex items-end pb-24 pl-6 md:pl-12 shadow-[inset_0_-150px_100px_-20px_#141414]">
+        <div class="max-w-2xl">
+            <h1 id="heroTitle" class="text-4xl md:text-6xl font-bold mb-4">Featured</h1>
+            <p id="heroDesc" class="text-sm md:text-lg mb-6 line-clamp-3 text-gray-300">Loading...</p>
+            <button id="heroPlayBtn" class="bg-white text-black px-8 py-2 rounded font-bold hover:bg-gray-200 transition flex items-center gap-2"><span>▶</span> Play</button>
+        </div>
+    </div>
+
+    <div class="px-6 md:px-12 space-y-8 pb-20">
+        <div id="searchSection" class="hidden">
+            <h2 class="text-xl font-semibold mb-4 text-red-600">Search Results</h2>
+            <div id="searchRow" class="flex overflow-x-scroll gap-4 pb-4 scrollbar-hide"></div>
+        </div>
+        
+        <h2 class="text-xl font-semibold">Trending Now</h2>
+        <div id="trendingRow" class="flex overflow-x-scroll gap-4 pb-4 scrollbar-hide"></div>
+
+        <h2 class="text-xl font-semibold">Top Rated</h2>
+        <div id="topRatedRow" class="flex overflow-x-scroll gap-4 pb-4 scrollbar-hide"></div>
+    </div>
+
+    <!-- Player Modal -->
+    <div id="playerModal" class="fixed inset-0 bg-black z-[100] hidden flex flex-col">
+        <div class="p-4 flex justify-between bg-black/50">
+            <span id="playingTitle" class="font-bold"></span>
+            <button id="closePlayer" class="text-2xl">&times; Close</button>
+        </div>
+        <iframe id="videoPlayer" class="flex-grow w-full h-full" src="" frameborder="0" allowfullscreen></iframe>
+    </div>
+
+    <script>
+        const API_KEY = '70c6183515ac89cbab2dbdea3a6c6124'; // <--- PUT YOUR KEY HERE
+        const BASE_URL = 'https://api.themoviedb.org/3';
+        const IMG_URL = 'https://image.tmdb.org/t/p/original';
+        const PLAYER_PARAMS = "autoplay=true&poster=true&title=true&download=true&watchparty=true&chromecast=true&servericon=true&setting=true&pip=true&icons=netflix&primarycolor=6C63FF&secondarycolor=9F9BFF&iconcolor=FFFFFF&logourl=https%3A%2F%2Fi.ibb.co%2F67wTJd9R%2Fpngimg-com-netflix-PNG11.png&font=Roboto&fontcolor=FFFFFF&fontsize=20&opacity=0.5";
+
+        async function fetchRow(path, elementId) {
+            const res = await fetch(`${BASE_URL}${path}?api_key=${API_KEY}`);
+            const data = await res.json();
+            const container = document.getElementById(elementId);
+            container.innerHTML = '';
+            
+            data.results.forEach(movie => {
+                if(!movie.poster_path) return;
+                const card = document.createElement('div');
+                card.className = 'movie-card rounded-md bg-cover bg-center';
+                card.style.backgroundImage = `url(${IMG_URL + movie.poster_path})`;
+                card.onclick = () => openPlayer(movie.id, movie.title || movie.name);
+                container.appendChild(card);
+            });
+            if(elementId === 'trendingRow') setHero(data.results[0]);
+        }
+
+        function setHero(movie) {
+            document.getElementById('hero').style.backgroundImage = `url(${IMG_URL + movie.backdrop_path})`;
+            document.getElementById('heroTitle').innerText = movie.title || movie.name;
+            document.getElementById('heroDesc').innerText = movie.overview;
+            document.getElementById('heroPlayBtn').onclick = () => openPlayer(movie.id, movie.title || movie.name);
+        }
+
+        function openPlayer(id, title) {
+            document.getElementById('playingTitle').innerText = title;
+            document.getElementById('videoPlayer').src = `https://player.vidplus.to/embed/movie/${id}?${PLAYER_PARAMS}`;
+            document.getElementById('playerModal').classList.remove('hidden');
+        }
+
+        document.getElementById('closePlayer').onclick = () => {
+            document.getElementById('playerModal').classList.add('hidden');
+            document.getElementById('videoPlayer').src = "";
+        };
+
+        document.getElementById('searchBar').addEventListener('keyup', async (e) => {
+            const query = e.target.value;
+            if(query.length > 2) {
+                document.getElementById('searchSection').classList.remove('hidden');
+                fetchRow(`/search/movie`, 'searchRow&query=' + query); // Helper tweak below
+                const res = await fetch(`${BASE_URL}/search/movie?api_key=${API_KEY}&query=${query}`);
+                const data = await res.json();
+                const container = document.getElementById('searchRow');
+                container.innerHTML = '';
+                data.results.forEach(movie => {
+                    if(!movie.poster_path) return;
+                    const card = document.createElement('div');
+                    card.className = 'movie-card rounded-md bg-cover bg-center';
+                    card.style.backgroundImage = `url(${IMG_URL + movie.poster_path})`;
+                    card.onclick = () => openPlayer(movie.id, movie.title || movie.name);
+                    container.appendChild(card);
+                });
+            } else {
+                document.getElementById('searchSection').classList.add('hidden');
+            }
+        });
+
+        window.onscroll = () => {
+            const nav = document.getElementById('navbar');
+            if (window.scrollY > 50) nav.classList.add('bg-[#141414]');
+            else nav.classList.remove('bg-[#141414]');
+        };
+
+        fetchRow('/trending/movie/week', 'trendingRow');
+        fetchRow('/movie/top_rated', 'top_ratedRow');
+    </script>
 </body>
 </html>
