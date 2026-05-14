@@ -3,109 +3,313 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Kasen Stream — Clean</title>
+  <title>Kasen Stream</title>
 
-  <!-- Minimal Tailwind -->
+  <!-- Tailwind CDN + custom config for neon accents -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Tailwind config for premium cinematic theme
+    tailwind.config = {
+      content: [],
+      theme: {
+        extend: {
+          colors: {
+            'neon-teal': '#00f5d4',
+            'deep-black': '#0a0a0f',
+            'glass': 'rgba(15, 23, 42, 0.75)'
+          }
+        }
+      }
+    }
+  </script>
 
-  <!-- PWA manifest (inline data manifest) -->
-  <link rel="manifest" href='data:application/manifest+json,{"name":"Kasen Stream","short_name":"K-Stream","start_url":".","display":"standalone","background_color":"#0b0b0b","theme_color":"#0b0b0b","icons":[{"src":"data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect width=%2264%22 height=%2264%22 rx=%2210%22 fill=%22%236CDBD6%22/%3E%3Cpath d=%22M18 20h28v4H18zM18 30h28v4H18zM18 40h18v4H18z%22 fill=%22%230b0b0b%22/%3E%3C/svg%3E","sizes":"192x192","type":"image/svg+xml"}]}'>
+  <!-- PWA manifest -->
+  <link rel="manifest" href='data:application/manifest+json,{"name":"Kasen Stream","short_name":"K-Stream","start_url":".","display":"standalone","background_color":"#0a0a0f","theme_color":"#00f5d4","icons":[{"src":"data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect width=%2264%22 height=%2264%22 rx=%2212%22 fill=%22%2300f5d4%22/%3E%3Cpath d=%22M20 22h24v4H20zM20 32h24v4H20zM20 42h18v4H20z%22 fill=%22%230a0a0f%22/%3E%3C/svg%3E","sizes":"192x192","type":"image/svg+xml"}]}'>
 
-  <meta name="theme-color" content="#0b0b0b" />
+  <meta name="theme-color" content="#00f5d4" />
+  
   <style>
-    body { background: #070708; color: #e6eef0; }
-    .card { transition: transform .18s ease, box-shadow .18s ease; border-radius: 10px; overflow: hidden; background-size: cover; background-position: center; cursor: pointer; }
-    .card:hover { transform: translateY(-6px); box-shadow: 0 18px 40px rgba(0,0,0,.6); }
-    .card-overlay { background: linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,.6) 100%); padding: 10px; display:flex; align-items:flex-end; gap:8px; height:100%; box-sizing:border-box; }
-    .progress-bar { height:6px; background: rgba(255,255,255,.08); border-radius:6px; overflow:hidden; width:100%; }
-    .progress-fill { height:100%; background: linear-gradient(90deg,#00D4C4,#2EC4B6); width:0%; transition: width .25s ease; }
-    /* layout */
-    .sidebar { background: linear-gradient(180deg,#061018,#07121a); min-width:220px; }
-    .main { flex:1; min-width:0; }
-    /* player modal */
-    #playerModal { backdrop-filter: blur(6px); }
-    /* hide nav overlap when player open */
-    .player-open #siteHeader { display:none; }
-    /* responsive tweaks */
-    @media (max-width: 768px) {
-      .sidebar { display:none; }
-      .card { min-width: 140px; height: 210px; }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500&amp;display=swap');
+    
+    :root {
+      --tw-color-primary: #00f5d4;
+    }
+    
+    * {
+      transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+      transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+      transition-duration: 150ms;
+    }
+    
+    body {
+      background: linear-gradient(180deg, #0a0a0f 0%, #050508 100%);
+      color: #e0f2f5;
+      font-family: 'Inter', system_ui, sans-serif;
+    }
+    
+    .logo-font {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    /* Glassmorphic header */
+    #siteHeader {
+      background: rgba(10, 10, 15, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.3);
+    }
+
+    /* Hero */
+    #hero {
+      min-height: 520px;
+      background-size: cover;
+      background-position: center 30%;
+      position: relative;
+    }
+    #hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, #0a0a0f 0%, rgba(10,10,15,0.4) 40%, rgba(10,10,15,0.85) 70%, #0a0a0f 100%);
+      z-index: 1;
+    }
+    .hero-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    /* Cards - premium cinematic */
+    .card {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 16px;
+      overflow: hidden;
+      background-size: cover;
+      background-position: center;
+      box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.4);
+      position: relative;
+      cursor: pointer;
+      min-width: 180px;
+      height: 270px;
+    }
+    
+    .card:hover {
+      transform: translateY(-10px) scale(1.04);
+      box-shadow: 0 25px 50px -12px rgb(0 245 212 / 0.3);
+    }
+    
+    .card .play-overlay {
+      opacity: 0;
+      position: absolute;
+      inset: 0;
+      background: rgba(10, 10, 15, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+    
+    .card:hover .play-overlay {
+      opacity: 1;
+    }
+    
+    .card-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(180deg, transparent 30%, rgba(10,10,15,0.85) 85%);
+      padding: 20px 16px 16px;
+      z-index: 20;
+    }
+    
+    /* Neon progress */
+    .progress-bar {
+      height: 5px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 9999px;
+      overflow: hidden;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.3);
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #00f5d4, #00c4b8);
+      box-shadow: 0 0 12px #00f5d4;
+      transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Sidebar */
+    .sidebar {
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(16px);
+      border-right: 1px solid rgba(255,255,255,0.08);
+    }
+    
+    /* Player modal */
+    #playerModal {
+      background: rgba(10, 10, 15, 0.98);
+      backdrop-filter: blur(12px);
+    }
+    
+    /* Row labels */
+    .row-label {
+      font-size: 1.35rem;
+      letter-spacing: -0.02em;
+    }
+    
+    /* Scroll snap for rows */
+    .row-scroll {
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+    }
+    .row-scroll > * {
+      scroll-snap-align: start;
+    }
+    
+    /* Badge glow */
+    .badge {
+      box-shadow: 0 0 15px -2px rgb(0 245 212);
     }
   </style>
 </head>
 <body class="antialiased">
 
-  <!-- Header (hidden when player open to avoid overlap) -->
-  <header id="siteHeader" class="fixed top-0 left-0 right-0 z-40 bg-transparent p-4">
-    <div class="max-w-7xl mx-auto flex items-center justify-between">
-      <div class="flex items-center gap-4">
-        <!-- new neutral icon + name -->
-        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-teal-400 to-cyan-400 flex items-center justify-center">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
-            <path d="M3 7h18M3 12h18M3 17h12" stroke="#07121a" stroke-width="1.6" stroke-linecap="round"/>
+  <!-- HEADER - glassmorphic + neon accent -->
+  <header id="siteHeader" class="fixed top-0 left-0 right-0 z-50 border-b border-white/10">
+    <div class="max-w-screen-2xl mx-auto flex items-center justify-between px-8 py-4">
+      
+      <!-- Logo -->
+      <div class="flex items-center gap-x-3">
+        <div class="w-9 h-9 rounded-2xl bg-gradient-to-br from-[#00f5d4] to-[#00c4b8] flex items-center justify-center shadow-[0_0_20px_-3px_#00f5d4] flex-shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#0a0a0f]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.75">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 4.01V8" />
           </svg>
         </div>
-        <div class="text-white font-semibold">Kasen Stream</div>
+        <h1 class="logo-font text-3xl font-medium tracking-[-1px] text-white">kasen</h1>
+        <span class="text-[#00f5d4] text-xs font-semibold tracking-[2px] uppercase mt-1">STREAM</span>
       </div>
-      <div class="flex items-center gap-3">
-        <input id="searchBar" placeholder="Search..." class="bg-[#0f1112] border border-[#1b1f21] rounded px-3 py-2 text-sm w-44 focus:outline-none" />
-        <button id="homeBtn" class="text-sm px-3 py-2 rounded bg-[#0f1720] hover:bg-[#13202a]">Home</button>
+
+      <!-- Search -->
+      <div class="flex-1 max-w-xl mx-8">
+        <div class="relative">
+          <input 
+            id="searchBar" 
+            placeholder="Search movies, TV shows, actors..." 
+            class="w-full bg-white/10 hover:bg-white/15 border border-white/10 focus:border-[#00f5d4] text-white placeholder:text-white/50 rounded-3xl pl-12 py-3 text-sm focus:outline-none shadow-inner">
+          <div class="absolute left-5 top-1/2 -translate-y-1/2 text-white/40">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 01-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-x-6">
+        <!-- Home button -->
+        <button id="homeBtn" 
+                class="flex items-center gap-x-2 px-6 py-2.5 text-sm font-medium rounded-3xl hover:bg-white/10 text-white">
+          <span>Home</span>
+        </button>
+        
+        <!-- Fake profile -->
+        <div class="flex items-center gap-x-2">
+          <div class="text-right">
+            <div class="text-sm font-medium">Kasen</div>
+            <div class="text-xs text-white/50">Premium</div>
+          </div>
+          <div class="w-8 h-8 rounded-2xl bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-xs font-bold ring-2 ring-[#00f5d4]/30">K</div>
+        </div>
       </div>
     </div>
   </header>
 
-  <!-- Layout -->
+  <!-- MAIN LAYOUT -->
   <div class="pt-20">
-    <div class="max-w-7xl mx-auto flex gap-6 px-4 md:px-6">
+    <div class="max-w-screen-2xl mx-auto flex gap-8 px-8">
 
-      <!-- Sidebar -->
-      <aside class="sidebar hidden md:block rounded-lg p-4 text-sm text-gray-300">
-        <nav class="space-y-3">
-          <div class="font-semibold text-gray-100 mb-2">Browse</div>
-          <button class="w-full text-left py-2 px-3 rounded hover:bg-[#07121a] categoryBtn" data-path="/trending/all/week">Trending</button>
-          <button class="w-full text-left py-2 px-3 rounded hover:bg-[#07121a] categoryBtn" data-path="/movie/top_rated">Top Rated</button>
-          <button class="w-full text-left py-2 px-3 rounded hover:bg-[#07121a] categoryBtn" data-path="/tv/popular" data-tv="1">TV Shows</button>
-          <button class="w-full text-left py-2 px-3 rounded hover:bg-[#07121a] categoryBtn" data-path="/discover/movie?with_genres=28">Action</button>
-          <button class="w-full text-left py-2 px-3 rounded hover:bg-[#07121a] categoryBtn" data-path="/discover/movie?with_genres=35">Comedy</button>
-          <button class="w-full text-left py-2 px-3 rounded hover:bg-[#07121a] categoryBtn" data-path="/discover/movie?with_genres=27">Horror</button>
-          <button class="w-full text-left py-2 px-3 rounded hover:bg-[#07121a] categoryBtn" data-path="/discover/movie?with_genres=99">Docs</button>
+      <!-- SIDEBAR - glass + icons -->
+      <aside class="sidebar hidden lg:flex w-64 flex-col rounded-3xl p-6 text-sm h-[calc(100vh-6rem)] sticky top-6">
+        <nav class="space-y-1 flex-1">
+          <div class="font-semibold text-white/90 mb-6 flex items-center gap-x-2">
+            <span>Browse</span>
+          </div>
+          
+          <button onclick="switchCategory(this)" data-path="/trending/all/week" class="categoryBtn flex w-full items-center gap-x-3 text-left px-4 py-4 rounded-2xl hover:bg-white/10 active:bg-[#00f5d4]/10 text-white font-medium">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+            Trending
+          </button>
+          
+          <button onclick="switchCategory(this)" data-path="/movie/top_rated" class="categoryBtn flex w-full items-center gap-x-3 text-left px-4 py-4 rounded-2xl hover:bg-white/10 active:bg-[#00f5d4]/10 text-white font-medium">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.975 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118L8.48 9.11c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
+            Top Rated
+          </button>
+          
+          <button onclick="switchCategory(this)" data-path="/tv/popular" data-tv="1" class="categoryBtn flex w-full items-center gap-x-3 text-left px-4 py-4 rounded-2xl hover:bg-white/10 active:bg-[#00f5d4]/10 text-white font-medium">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 13l-5 5m0 0l-5-5m5 5V6" /></svg>
+            TV Shows
+          </button>
+          
+          <div class="pt-6 border-t border-white/10 mt-6">
+            <div class="font-semibold text-white/90 mb-4">Genres</div>
+            <button onclick="switchCategory(this)" data-path="/discover/movie?with_genres=28" class="categoryBtn flex w-full items-center gap-x-3 text-left px-4 py-3 rounded-2xl hover:bg-white/10 text-white/80">🔥 Action</button>
+            <button onclick="switchCategory(this)" data-path="/discover/movie?with_genres=35" class="categoryBtn flex w-full items-center gap-x-3 text-left px-4 py-3 rounded-2xl hover:bg-white/10 text-white/80">😂 Comedy</button>
+            <button onclick="switchCategory(this)" data-path="/discover/movie?with_genres=27" class="categoryBtn flex w-full items-center gap-x-3 text-left px-4 py-3 rounded-2xl hover:bg-white/10 text-white/80">👻 Horror</button>
+            <button onclick="switchCategory(this)" data-path="/discover/movie?with_genres=99" class="categoryBtn flex w-full items-center gap-x-3 text-left px-4 py-3 rounded-2xl hover:bg-white/10 text-white/80">📜 Documentaries</button>
+          </div>
         </nav>
+        
+        <div class="mt-auto pt-8 border-t border-white/10 text-xs text-white/40 flex items-center justify-between">
+          <div>Made for Kasen</div>
+          <div class="flex gap-1">
+            <div class="w-2 h-2 bg-[#00f5d4] rounded-full animate-pulse"></div>
+            LIVE
+          </div>
+        </div>
       </aside>
 
-      <!-- Main -->
-      <main class="main">
-        <!-- Hero -->
-        <section id="hero" class="rounded-lg overflow-hidden mb-8 relative" style="min-height:260px; background: linear-gradient(180deg,#07121a,#041018);">
-          <div class="p-6 md:p-10 flex flex-col md:flex-row md:items-end md:justify-between">
-            <div>
-              <h2 id="heroTitle" class="text-2xl md:text-4xl font-bold">Kasen Stream</h2>
-              <p id="heroDesc" class="text-gray-300 mt-2 max-w-2xl">A cleaner, calmer browsing experience. Click any card to open the player and resume where you left off.</p>
-            </div>
-            <div class="mt-4 md:mt-0">
-              <button id="heroPlayBtn" class="bg-teal-400 text-[#041018] px-4 py-2 rounded font-semibold">Play Featured</button>
+      <!-- MAIN CONTENT -->
+      <main class="flex-1 min-w-0 pb-12">
+        
+        <!-- CINEMATIC HERO -->
+        <section id="hero" class="rounded-3xl overflow-hidden mb-12 relative">
+          <div class="hero-content p-8 md:p-12 lg:p-16 flex flex-col justify-end h-full min-h-[520px]">
+            <div class="max-w-lg">
+              <div id="heroBadge" class="inline-flex items-center gap-x-1.5 text-xs font-semibold uppercase tracking-widest bg-white/10 text-white px-4 h-7 rounded-3xl mb-4"></div>
+              <h2 id="heroTitle" class="text-5xl md:text-6xl font-semibold leading-none logo-font tracking-[-1px] mb-4"></h2>
+              <p id="heroDesc" class="text-white/80 text-lg md:text-xl line-clamp-3 mb-8"></p>
+              
+              <button onclick="playHero()" 
+                      class="flex items-center gap-x-3 bg-white text-black font-semibold text-lg px-8 h-14 rounded-3xl hover:scale-105 active:scale-95 shadow-xl shadow-[#00f5d4]/30">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 4.01V8" />
+                </svg>
+                <span>Play Now</span>
+              </button>
             </div>
           </div>
         </section>
 
-        <!-- Rows container -->
-        <div id="rows" class="space-y-8"></div>
+        <!-- ROWS CONTAINER -->
+        <div id="rows" class="space-y-12"></div>
       </main>
     </div>
   </div>
 
-  <!-- Player Modal (full-screen) -->
-  <div id="playerModal" class="fixed inset-0 z-50 hidden flex flex-col bg-black/95">
-    <div class="flex items-center justify-between p-4 border-b border-white/6">
+  <!-- FULL-SCREEN PLAYER -->
+  <div id="playerModal" class="fixed inset-0 z-[9999] hidden flex flex-col">
+    <div class="flex items-center justify-between px-8 py-5 border-b border-white/10 bg-black/70 backdrop-blur-md">
       <div>
-        <div id="playingTitle" class="font-semibold text-lg"></div>
-        <div id="playerSub" class="text-sm text-gray-300"></div>
+        <div id="playingTitle" class="text-xl font-semibold"></div>
+        <div id="playerSub" class="text-white/60 text-sm"></div>
       </div>
-      <div class="flex items-center gap-3">
-        <button id="closePlayer" class="text-3xl leading-none px-3 py-1">×</button>
+      
+      <div class="flex items-center gap-x-8">
+        <button onclick="closePlayer()" class="flex items-center justify-center w-10 h-10 rounded-2xl hover:bg-white/10 text-4xl leading-none text-white/80">×</button>
       </div>
     </div>
-
-    <div class="flex-1 relative">
+    
+    <div class="flex-1 relative bg-black">
       <iframe id="embed_iframe" class="w-full h-full" frameborder="0"
               allow="autoplay *; fullscreen *; picture-in-picture *; encrypted-media *"
               allowfullscreen></iframe>
@@ -113,23 +317,22 @@
   </div>
 
   <script>
-    /***** CONFIG - set your player id and TMDB key *****/
+    /***** CONFIG *****/
     const TMDB_KEY = '70c6183515ac89cbab2dbdea3a6c6124';
     const TMDB_BASE = 'https://api.themoviedb.org/3';
-    const IMG_URL = 'https://image.tmdb.org/t/p/w500';
-    const EMBEDMASTER_BASE = 'https://embedmaster.link'; // change if needed
-    const EMBEDMASTER_PLAYER_ID = 'YOUR_PLAYER_ID_HERE'; // <-- set this
+    const IMG_URL = 'https://image.tmdb.org/t/p/';
+    const EMBEDMASTER_BASE = 'https://embedmaster.link';
+    const EMBEDMASTER_PLAYER_ID = 'YOUR_PLAYER_ID_HERE'; // Change this
 
-    /***** Simple categories to render (you can edit) *****/
     const ROWS = [
-      { id: 'r_trending', label: 'Trending Now', path: '/trending/all/week', isTV:false },
-      { id: 'r_top', label: 'Top Rated', path: '/movie/top_rated', isTV:false },
-      { id: 'r_tv', label: 'Popular TV', path: '/tv/popular', isTV:true },
-      { id: 'r_action', label: 'Action & Adventure', path: '/discover/movie?with_genres=28', isTV:false },
-      { id: 'r_comedy', label: 'Comedy', path: '/discover/movie?with_genres=35', isTV:false }
+      { id: 'r_trending', label: 'Trending Now', path: '/trending/all/week', isTV: false },
+      { id: 'r_top', label: 'Top Rated Movies', path: '/movie/top_rated', isTV: false },
+      { id: 'r_tv', label: 'Popular TV Shows', path: '/tv/popular', isTV: true },
+      { id: 'r_action', label: 'Action & Adventure', path: '/discover/movie?with_genres=28', isTV: false },
+      { id: 'r_comedy', label: 'Comedy', path: '/discover/movie?with_genres=35', isTV: false }
     ];
 
-    /***** Helpers: localStorage progress *****/
+    /***** Progress helpers *****/
     function progressKey(id) { return 'ks_progress_' + id; }
     function loadProgress(id) {
       try {
@@ -147,183 +350,245 @@
     const playerModal = document.getElementById('playerModal');
     const playingTitle = document.getElementById('playingTitle');
     const playerSub = document.getElementById('playerSub');
-    const closePlayerBtn = document.getElementById('closePlayer');
-    const heroPlayBtn = document.getElementById('heroPlayBtn');
     const searchBar = document.getElementById('searchBar');
     const homeBtn = document.getElementById('homeBtn');
 
-    /***** Build rows UI *****/
+    let current = null;
+    let lastKnownTime = 0;
+    let sessionStart = 0;
+
+    /***** Fetch helper *****/
+    async function fetchJson(url) {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) return null;
+        return await res.json();
+      } catch(e) { return null; }
+    }
+
+    /***** Load dynamic cinematic hero *****/
+    async function loadHero() {
+      const heroEl = document.getElementById('hero');
+      const titleEl = document.getElementById('heroTitle');
+      const descEl = document.getElementById('heroDesc');
+      const badgeEl = document.getElementById('heroBadge');
+
+      const data = await fetchJson(`${TMDB_BASE}/trending/all/week?api_key=${TMDB_KEY}`);
+      if (!data || !data.results || !data.results[0]) return;
+
+      const item = data.results[0];
+      const isTV = !!item.name;
+      
+      // Backdrop
+      if (item.backdrop_path) {
+        heroEl.style.backgroundImage = `url(${IMG_URL}original${item.backdrop_path})`;
+      }
+      
+      // Content
+      titleEl.textContent = item.title || item.name || 'Featured';
+      descEl.textContent = (item.overview || '').slice(0, 160) + '...';
+      
+      // Badge
+      badgeEl.innerHTML = `
+        ${isTV ? '📺 TV SERIES' : '🎬 MOVIE'} 
+        <span class="text-[#00f5d4]">★</span> 
+        ${item.vote_average ? item.vote_average.toFixed(1) : 'N/A'}
+      `;
+      
+      // Store for play button
+      heroEl.dataset.id = item.id;
+      heroEl.dataset.tv = isTV ? '1' : '0';
+      heroEl.dataset.title = item.title || item.name || 'Featured';
+    }
+
+    /***** Play featured hero *****/
+    window.playHero = function() {
+      const hero = document.getElementById('hero');
+      const id = hero.dataset.id;
+      const isTV = hero.dataset.tv === '1';
+      const title = hero.dataset.title;
+      if (id) openPlayer(id, title, isTV);
+    };
+
+    /***** Create row UI *****/
     function createRow(row) {
       const section = document.createElement('section');
-      section.className = 'space-y-3';
+      section.className = 'space-y-4';
       section.innerHTML = `
-        <div class="flex items-center justify-between">
-          <h3 class="text-xl font-semibold">${row.label}</h3>
-          <div class="text-sm text-gray-400">Auto</div>
+        <div class="flex items-baseline justify-between">
+          <h3 class="row-label font-semibold text-white">${row.label}</h3>
+          <span onclick="switchCategory(this)" data-path="${row.path}" data-tv="${row.isTV}" class="text-[#00f5d4] text-sm cursor-pointer flex items-center hover:underline">See all →</span>
         </div>
-        <div id="${row.id}" class="flex gap-4 overflow-x-auto py-2"></div>
+        <div id="${row.id}" class="flex gap-4 overflow-x-auto row-scroll pb-6"></div>
       `;
       rowsContainer.appendChild(section);
     }
 
-    async function fetchJson(url) {
-      const res = await fetch(url);
-      if (!res.ok) return null;
-      return res.json();
-    }
-
+    /***** Load content row *****/
     async function loadRow(row) {
       const container = document.getElementById(row.id);
       if (!container) return;
-      container.innerHTML = '<div class="text-gray-500 px-2">Loading...</div>';
-      const url = `${TMDB_BASE}${row.path}${row.path.includes('?') ? '&' : '?'}api_key=${TMDB_KEY}`;
+      
+      container.innerHTML = `<div class="flex items-center justify-center text-white/30 py-12">Loading stunning content…</div>`;
+      
+      const url = `${TMDB_BASE}${row.path}${row.path.includes('?') ? '&' : '?'}api_key=${TMDB_KEY}&language=en-US`;
       const data = await fetchJson(url);
+      
       container.innerHTML = '';
-      if (!data || !data.results) {
-        container.innerHTML = '<div class="text-gray-500 px-2">Failed to load</div>';
+      if (!data?.results?.length) {
+        container.innerHTML = `<div class="text-white/30">No results</div>`;
         return;
       }
+
       data.results.forEach(item => {
         if (!item.poster_path) return;
+        
         const id = item.id;
         const title = item.title || item.name || 'Untitled';
-        const poster = IMG_URL + item.poster_path;
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.style.minWidth = '170px';
-        card.style.height = '260px';
-        card.style.backgroundImage = `url(${poster})`;
-        card.setAttribute('data-id', id);
-        card.setAttribute('data-tv', row.isTV ? '1' : '0');
+        const poster = IMG_URL + 'w342' + item.poster_path;
+        const year = (item.release_date || item.first_air_date || '').slice(0,4);
+        const rating = item.vote_average ? item.vote_average.toFixed(1) : '?';
+        const isTV = row.isTV || item.media_type === 'tv';
 
-        // overlay
-        const overlay = document.createElement('div');
-        overlay.className = 'card-overlay';
-        overlay.innerHTML = `
-          <div style="flex:1">
-            <div class="font-semibold">${title.length>24?title.slice(0,22)+'…':title}</div>
-            <div class="text-xs text-gray-300 mt-1" id="meta-${id}"></div>
-            <div class="mt-3 progress-bar"><div id="fill-${id}" class="progress-fill"></div></div>
+        const cardHTML = `
+          <div class="card" data-id="${id}" data-tv="${isTV ? 1 : 0}" style="background-image: url('${poster}')">
+            <!-- Hover play overlay -->
+            <div class="play-overlay">
+              <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-2xl">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-black ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132z" />
+                </svg>
+              </div>
+            </div>
+            
+            <!-- Bottom overlay -->
+            <div class="card-overlay">
+              <div class="flex justify-between items-start mb-2">
+                <div class="font-semibold text-base leading-tight">${title.length > 22 ? title.slice(0,20)+'…' : title}</div>
+                <div class="badge flex-shrink-0 bg-black/70 text-[#00f5d4] text-[10px] font-bold px-2 py-px rounded-xl">${rating}</div>
+              </div>
+              
+              <div class="flex justify-between text-xs text-white/70 mb-3">
+                <span>${year || '—'}</span>
+                <span class="uppercase">${isTV ? 'TV' : 'MOVIE'}</span>
+              </div>
+              
+              <!-- Progress -->
+              <div class="progress-bar">
+                <div id="fill-${id}" class="progress-fill" style="width:0%"></div>
+              </div>
+            </div>
           </div>
         `;
-        card.appendChild(overlay);
 
-        // click opens player
-        card.addEventListener('click', () => openPlayer(item.id, title, row.isTV));
-
+        const cardWrapper = document.createElement('div');
+        cardWrapper.innerHTML = cardHTML;
+        const card = cardWrapper.firstElementChild;
+        
+        card.addEventListener('click', () => {
+          openPlayer(id, title, isTV);
+        });
+        
         container.appendChild(card);
-
-        // update progress UI
-        updateCardProgressUI(item.id, row.isTV);
+        
+        // Load progress
+        updateCardProgressUI(id, isTV);
       });
     }
 
-    /***** Update card progress UI from saved seconds and runtime *****/
+    /***** Progress UI update *****/
     async function updateCardProgressUI(id, isTV = null) {
       const fill = document.getElementById(`fill-${id}`);
-      const meta = document.getElementById(`meta-${id}`);
-      if (!fill && !meta) return;
+      if (!fill) return;
+      
       const data = loadProgress(id);
-      // try to fetch runtime to compute percent
+      if (!data.seconds) return;
+      
+      // Get runtime for accurate %
       try {
-        if (isTV === null) {
-          const el = document.querySelector(`[data-id="${id}"]`);
-          isTV = el && el.getAttribute('data-tv') === '1';
-        }
+        const el = document.querySelector(`[data-id="${id}"]`);
+        if (isTV === null && el) isTV = el.dataset.tv === '1';
+        
         const path = isTV ? `/tv/${id}` : `/movie/${id}`;
         const info = await fetchJson(`${TMDB_BASE}${path}?api_key=${TMDB_KEY}`);
-        let runtimeSec = null;
+        
+        let runtimeSec = 0;
         if (info) {
-          if (isTV) {
-            const arr = info.episode_run_time || [];
-            runtimeSec = arr.length ? arr[0] * 60 : null;
-          } else {
-            runtimeSec = info.runtime ? info.runtime * 60 : null;
-          }
+          if (isTV && info.episode_run_time?.length) runtimeSec = info.episode_run_time[0] * 60;
+          else if (!isTV && info.runtime) runtimeSec = info.runtime * 60;
         }
-        if (runtimeSec && data.seconds) {
-          const pct = Math.min(100, Math.round((data.seconds / runtimeSec) * 100));
-          if (fill) fill.style.width = pct + '%';
-          if (meta) meta.innerText = `${pct}% watched`;
+        
+        let pct = 0;
+        if (runtimeSec > 0) {
+          pct = Math.min(100, Math.round((data.seconds / runtimeSec) * 100));
         } else {
-          // fallback: show up to 100s as 100%
-          const pct = Math.min(100, Math.round((data.seconds / 100) * 100));
-          if (fill) fill.style.width = pct + '%';
-          if (meta) meta.innerText = data.seconds ? `${Math.round(data.seconds)}s watched` : '';
+          pct = Math.min(100, Math.round(data.seconds / 3)); // fallback
         }
-      } catch (e) {
-        if (meta) meta.innerText = data.seconds ? `${Math.round(data.seconds)}s watched` : '';
+        
+        fill.style.width = pct + '%';
+      } catch(e) {
+        fill.style.width = '30%'; // fallback
       }
     }
 
-    /***** Build embed URL (prefer imdb id if available) *****/
-    async function getImdbId(tmdbId, isTV=false) {
+    /***** Player functions (unchanged logic, new UI) *****/
+    async function getImdbId(tmdbId, isTV) {
       try {
         const path = isTV ? `/tv/${tmdbId}/external_ids` : `/movie/${tmdbId}/external_ids`;
         const res = await fetchJson(`${TMDB_BASE}${path}?api_key=${TMDB_KEY}`);
-        return res && res.imdb_id ? res.imdb_id : null;
-      } catch (e) { return null; }
+        return res?.imdb_id || null;
+      } catch(e) { return null; }
     }
 
-    async function buildEmbedUrl(tmdbId, isTV=false, season=1, episode=1) {
+    async function buildEmbedUrl(tmdbId, isTV) {
       const imdb = await getImdbId(tmdbId, isTV);
-      const idForEmbed = imdb ? imdb : tmdbId;
+      const idForEmbed = imdb || tmdbId;
       if (EMBEDMASTER_PLAYER_ID && EMBEDMASTER_PLAYER_ID !== 'YOUR_PLAYER_ID_HERE') {
-        if (isTV) return `${EMBEDMASTER_BASE}/${EMBEDMASTER_PLAYER_ID}/tv/${idForEmbed}/${season}/${episode}`;
-        return `${EMBEDMASTER_BASE}/${EMBEDMASTER_PLAYER_ID}/movie/${idForEmbed}`;
-      } else {
-        // fallback: direct path without player id
-        if (isTV) return `${EMBEDMASTER_BASE}/tv/${idForEmbed}/${season}/${episode}`;
-        return `${EMBEDMASTER_BASE}/movie/${idForEmbed}`;
+        return isTV 
+          ? `${EMBEDMASTER_BASE}/${EMBEDMASTER_PLAYER_ID}/tv/${idForEmbed}/1/1`
+          : `${EMBEDMASTER_BASE}/${EMBEDMASTER_PLAYER_ID}/movie/${idForEmbed}`;
       }
+      return isTV 
+        ? `${EMBEDMASTER_BASE}/tv/${idForEmbed}/1/1`
+        : `${EMBEDMASTER_BASE}/movie/${idForEmbed}`;
     }
 
-    /***** Player open/close + save/resume logic *****/
-    let current = null; // {tmdbId, isTV}
-    let lastKnownTime = 0;
-    let sessionStart = 0;
-
-    async function openPlayer(tmdbId, title, isTV=false) {
+    async function openPlayer(tmdbId, title, isTV = false) {
       current = { tmdbId, isTV };
-      playingTitle.innerText = title;
-      playerSub.innerText = isTV ? 'TV' : 'Movie';
+      playingTitle.textContent = title;
+      playerSub.textContent = isTV ? 'TV Series • Season 1' : 'Movie';
+      
       document.body.classList.add('player-open');
       playerModal.classList.remove('hidden');
-
-      // build embed url and set iframe
+      
       const url = await buildEmbedUrl(tmdbId, isTV);
       iframe.src = url + (url.includes('?') ? '&' : '?') + 'autoplay=true';
-
-      // attempt resume after load
+      
       iframe.onload = () => {
         const saved = loadProgress(tmdbId);
-        if (saved && saved.seconds > 5) {
-          // ask player to seek (player must support postMessage 'seek' command)
+        if (saved.seconds > 10) {
           sendCommand('seek', Math.floor(saved.seconds));
         }
-        // start session timer fallback
         sessionStart = Date.now();
       };
     }
 
     function closePlayer() {
-      // accumulate session time if any
-      if (sessionStart) {
+      if (sessionStart && current) {
         const delta = (Date.now() - sessionStart) / 1000;
         const saved = loadProgress(current.tmdbId);
         saved.seconds = Math.max(saved.seconds || 0, Math.round((saved.seconds || 0) + delta));
         saveProgress(current.tmdbId, saved);
-        sessionStart = 0;
       }
-      // if lastKnownTime is available, prefer it
+      
       if (lastKnownTime && current) {
         const saved = loadProgress(current.tmdbId);
         saved.seconds = Math.max(saved.seconds || 0, Math.round(lastKnownTime));
         saveProgress(current.tmdbId, saved);
       }
-      // update UI
+      
       if (current) updateCardProgressUI(current.tmdbId, current.isTV);
-      // clear iframe and hide
+      
       iframe.src = '';
       playerModal.classList.add('hidden');
       document.body.classList.remove('player-open');
@@ -331,97 +596,127 @@
       lastKnownTime = 0;
     }
 
-    closePlayerBtn.addEventListener('click', closePlayer);
+    function sendCommand(command, value = null) {
+      if (!iframe.contentWindow) return;
+      iframe.contentWindow.postMessage({
+        source: 'embedmaster_player_command',
+        command: command,
+        value: value
+      }, '*');
+    }
 
-    // also close on Escape
-    window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !playerModal.classList.contains('hidden')) closePlayer(); });
-
-    /***** postMessage: listen for player events (EmbedMaster style) *****/
+    /***** Message listener for player progress *****/
     window.addEventListener('message', (event) => {
       const data = event.data;
-      if (!data) return;
-      // Accept both 'embedmaster_player' and 'embedmaster_player_event' sources
-      if (data.source !== 'embedmaster_player' && data.source !== 'embedmaster_player_event') return;
-      // typical fields: data.event, data.info.currentTime
-      if (data.event === 'timeupdate' && data.info && typeof data.info.currentTime === 'number') {
+      if (!data || (data.source !== 'embedmaster_player' && data.source !== 'embedmaster_player_event')) return;
+      
+      if (data.event === 'timeupdate' && data.info?.currentTime) {
         lastKnownTime = data.info.currentTime;
-        if (current && current.tmdbId) {
+        if (current) {
           const saved = loadProgress(current.tmdbId);
           saved.seconds = Math.round(data.info.currentTime);
           saveProgress(current.tmdbId, saved);
           updateCardProgressUI(current.tmdbId, current.isTV);
         }
       }
-      if (data.event === 'ended' && current && current.tmdbId) {
-        // reset saved progress on ended
-        const saved = loadProgress(current.tmdbId);
-        saved.seconds = 0;
-        saveProgress(current.tmdbId, saved);
+      
+      if (data.event === 'ended' && current) {
+        saveProgress(current.tmdbId, { seconds: 0 });
         updateCardProgressUI(current.tmdbId, current.isTV);
       }
     });
 
-    /***** send commands to player (seek only used here) *****/
-    function sendCommand(command, value=null) {
-      if (!iframe || !iframe.contentWindow) return;
-      iframe.contentWindow.postMessage({ source: 'embedmaster_player_command', command, value }, '*');
-    }
-
-    /***** Search handling (simple) *****/
+    /***** Search *****/
     searchBar.addEventListener('input', async (e) => {
       const q = e.target.value.trim();
-      const rowsEl = document.getElementById('rows');
       if (q.length > 2) {
-        // show a single search row
-        rowsEl.innerHTML = `<section class="space-y-3"><h3 class="text-xl font-semibold">Search results for "${q}"</h3><div id="searchRow" class="flex gap-4 overflow-x-auto py-2"></div></section>`;
+        rowsContainer.innerHTML = `
+          <section class="space-y-4">
+            <h3 class="row-label font-semibold text-white">Results for “${q}”</h3>
+            <div id="searchRow" class="flex gap-4 overflow-x-auto row-scroll pb-6"></div>
+          </section>`;
+        
         const data = await fetchJson(`${TMDB_BASE}/search/multi?api_key=${TMDB_KEY}&query=${encodeURIComponent(q)}`);
         const container = document.getElementById('searchRow');
         container.innerHTML = '';
-        (data.results || []).forEach(item => {
+        
+        (data?.results || []).forEach(item => {
           if (!item.poster_path) return;
           const id = item.id;
           const title = item.title || item.name || 'Untitled';
-          const poster = IMG_URL + item.poster_path;
-          const card = document.createElement('div');
-          card.className = 'card';
-          card.style.minWidth = '170px';
-          card.style.height = '260px';
-          card.style.backgroundImage = `url(${poster})`;
-          card.setAttribute('data-id', id);
-          card.setAttribute('data-tv', item.media_type === 'tv' ? '1' : '0');
-          const overlay = document.createElement('div');
-          overlay.className = 'card-overlay';
-          overlay.innerHTML = `<div style="flex:1"><div class="font-semibold">${title.length>24?title.slice(0,22)+'…':title}</div><div class="text-xs text-gray-300 mt-1" id="meta-${id}"></div><div class="mt-3 progress-bar"><div id="fill-${id}" class="progress-fill"></div></div></div>`;
-          card.appendChild(overlay);
-          card.addEventListener('click', () => openPlayer(item.id, title, item.media_type === 'tv'));
-          container.appendChild(card);
-          updateCardProgressUI(item.id, item.media_type === 'tv');
+          const poster = IMG_URL + 'w342' + item.poster_path;
+          const isTV = item.media_type === 'tv';
+          
+          const cardHTML = `
+            <div class="card" style="background-image:url('${poster}')" data-id="${id}" data-tv="${isTV?1:0}">
+              <div class="play-overlay">
+                <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-2xl">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-black ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132z" /></svg>
+                </div>
+              </div>
+              <div class="card-overlay">
+                <div class="font-semibold">${title}</div>
+                <div class="progress-bar mt-4"><div id="fill-${id}" class="progress-fill"></div></div>
+              </div>
+            </div>`;
+          
+          const wrapper = document.createElement('div');
+          wrapper.innerHTML = cardHTML;
+          wrapper.firstElementChild.addEventListener('click', () => openPlayer(id, title, isTV));
+          container.appendChild(wrapper.firstElementChild);
+          updateCardProgressUI(id, isTV);
         });
       } else {
-        // restore default rows
         rowsContainer.innerHTML = '';
         initRows();
       }
     });
 
-    /***** Home button: scroll to top and close player if open (avoid overlap) *****/
+    /***** Category switcher (for sidebar & “see all”) *****/
+    window.switchCategory = function(el) {
+      const path = el.getAttribute('data-path');
+      const isTV = el.getAttribute('data-tv') === '1';
+      
+      rowsContainer.innerHTML = `
+        <section class="space-y-4">
+          <h3 class="row-label font-semibold text-white">Loading category…</h3>
+          <div id="tempRow" class="flex gap-4 overflow-x-auto row-scroll pb-6"></div>
+        </section>`;
+      
+      const container = document.getElementById('tempRow');
+      fetchJson(`${TMDB_BASE}${path}${path.includes('?')?'&':'?'}api_key=${TMDB_KEY}`)
+        .then(data => {
+          container.innerHTML = '';
+          (data?.results || []).forEach(item => {
+            // Reuse card rendering logic (simplified)
+            const id = item.id;
+            const title = item.title || item.name || '';
+            const poster = IMG_URL + 'w342' + item.poster_path;
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.style.backgroundImage = `url(${poster})`;
+            card.innerHTML = `
+              <div class="play-overlay">
+                <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-2xl">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-black ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132z" /></svg>
+                </div>
+              </div>
+              <div class="card-overlay">
+                <div class="font-semibold text-base">${title}</div>
+              </div>`;
+            card.addEventListener('click', () => openPlayer(id, title, isTV));
+            container.appendChild(card);
+          });
+        });
+    };
+
+    /***** Home button *****/
     homeBtn.addEventListener('click', () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
-      // close player if open to avoid overlap
       if (!playerModal.classList.contains('hidden')) closePlayer();
     });
 
-    /***** Hero play: play first trending item if available *****/
-    heroPlayBtn.addEventListener('click', async () => {
-      // try to open first trending item
-      const data = await fetchJson(`${TMDB_BASE}/trending/all/week?api_key=${TMDB_KEY}`);
-      if (data && data.results && data.results[0]) {
-        const item = data.results[0];
-        openPlayer(item.id, item.title || item.name || 'Featured', false);
-      }
-    });
-
-    /***** Init rows *****/
+    /***** Init everything *****/
     function initRows() {
       rowsContainer.innerHTML = '';
       ROWS.forEach(r => {
@@ -429,39 +724,22 @@
         loadRow(r);
       });
     }
-    initRows();
 
-    /***** PWA: register a minimal service worker for offline shell caching *****/
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').catch(() => {
-        // if registration fails (e.g., running file://), ignore silently
+    async function initialize() {
+      await loadHero();
+      initRows();
+      
+      // Keyboard escape
+      document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && !playerModal.classList.contains('hidden')) closePlayer();
       });
+      
+      // Expose for console
+      window.ks = { openPlayer, closePlayer, loadProgress };
     }
 
-    /***** Minimal service worker file creation note:
-       - The code above attempts to register /sw.js. For local testing without a server,
-         registration may fail. If you host this on a server, create /sw.js with a simple
-         cache-first shell strategy. Example sw.js content:
-
-         const CACHE = 'ks-shell-v1';
-         self.addEventListener('install', e => {
-           e.waitUntil(caches.open(CACHE).then(c => c.addAll(['/','/index.html'])));
-         });
-         self.addEventListener('fetch', e => {
-           e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
-         });
-
-       - If you want, I can generate a ready-to-drop sw.js next.
-    *****/
-
-    /***** Dev helper: expose functions to console *****/
-    window.ks = {
-      openPlayer,
-      closePlayer,
-      loadProgress,
-      saveProgress,
-      updateCardProgressUI
-    };
+    // Start the magic
+    window.onload = initialize;
   </script>
 </body>
 </html>
