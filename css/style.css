@@ -1,0 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+body { font-family: 'Inter', system_ui, sans-serif; }
+.card { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+.card:hover { transform: scale(1.12); }
+.row { scrollbar-width: none; }
+.row::-webkit-scrollbar { display: none; }
+.hero-bg {
+    background: linear-gradient(to bottom, rgba(0,0,0,0.6) 30%, #000 80%), 
+                url('https://image.tmdb.org/t/p/original/8b8R8l88Qje9dn9jR3Y4b0P8k4z.jpg') center/cover;
+}
