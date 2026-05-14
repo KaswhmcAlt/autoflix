@@ -1,17 +1,467 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#e50914">
-    <title>AutoFlix</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="manifest" href="manifest.json">
-    <link rel="stylesheet" href="css/style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Kasen Stream — Clean</title>
+
+  <!-- Minimal Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- PWA manifest (inline data manifest) -->
+  <link rel="manifest" href='data:application/manifest+json,{"name":"Kasen Stream","short_name":"K-Stream","start_url":".","display":"standalone","background_color":"#0b0b0b","theme_color":"#0b0b0b","icons":[{"src":"data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect width=%2264%22 height=%2264%22 rx=%2210%22 fill=%22%236CDBD6%22/%3E%3Cpath d=%22M18 20h28v4H18zM18 30h28v4H18zM18 40h18v4H18z%22 fill=%22%230b0b0b%22/%3E%3C/svg%3E","sizes":"192x192","type":"image/svg+xml"}]}'>
+
+  <meta name="theme-color" content="#0b0b0b" />
+  <style>
+    body { background: #070708; color: #e6eef0; }
+    .card { transition: transform .18s ease, box-shadow .18s ease; border-radius: 10px; overflow: hidden; background-size: cover; background-position: center; cursor: pointer; }
+    .card:hover { transform: translateY(-6px); box-shadow: 0 18px 40px rgba(0,0,0,.6); }
+    .card-overlay { background: linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,.6) 100%); padding: 10px; display:flex; align-items:flex-end; gap:8px; height:100%; box-sizing:border-box; }
+    .progress-bar { height:6px; background: rgba(255,255,255,.08); border-radius:6px; overflow:hidden; width:100%; }
+    .progress-fill { height:100%; background: linear-gradient(90deg,#00D4C4,#2EC4B6); width:0%; transition: width .25s ease; }
+    /* layout */
+    .sidebar { background: linear-gradient(180deg,#061018,#07121a); min-width:220px; }
+    .main { flex:1; min-width:0; }
+    /* player modal */
+    #playerModal { backdrop-filter: blur(6px); }
+    /* hide nav overlap when player open */
+    .player-open #siteHeader { display:none; }
+    /* responsive tweaks */
+    @media (max-width: 768px) {
+      .sidebar { display:none; }
+      .card { min-width: 140px; height: 210px; }
+    }
+  </style>
 </head>
-<body class="bg-black text-white">
-    <div id="app"></div>
-    <script src="js/app.js"></script>
+<body class="antialiased">
+
+  <!-- Header (hidden when player open to avoid overlap) -->
+  <header id="siteHeader" class="fixed top-0 left-0 right-0 z-40 bg-transparent p-4">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <!-- new neutral icon + name -->
+        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-teal-400 to-cyan-400 flex items-center justify-center">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+            <path d="M3 7h18M3 12h18M3 17h12" stroke="#07121a" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="text-white font-semibold">Kasen Stream</div>
+      </div>
+      <div class="flex items-center gap-3">
+        <input id="searchBar" placeholder="Search..." class="bg-[#0f1112] border border-[#1b1f21] rounded px-3 py-2 text-sm w-44 focus:outline-none" />
+        <button id="homeBtn" class="text-sm px-3 py-2 rounded bg-[#0f1720] hover:bg-[#13202a]">Home</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Layout -->
+  <div class="pt-20">
+    <div class="max-w-7xl mx-auto flex gap-6 px-4 md:px-6">
+
+      <!-- Sidebar -->
+      <aside class="sidebar hidden md:block rounded-lg p-4 text-sm text-gray-300">
+        <nav class="space-y-3">
+          <div class="font-semibold text-gray-100 mb-2">Browse</div>
+          <button class="w-full text-left py-2 px-3 rounded hover:bg-[#07121a] categoryBtn" data-path="/trending/all/week">Trending</button>
+          <button class="w-full text-left py-2 px-3 rounded hover:bg-[#07121a] categoryBtn" data-path="/movie/top_rated">Top Rated</button>
+          <button class="w-full text-left py-2 px-3 rounded hover:bg-[#07121a] categoryBtn" data-path="/tv/popular" data-tv="1">TV Shows</button>
+          <button class="w-full text-left py-2 px-3 rounded hover:bg-[#07121a] categoryBtn" data-path="/discover/movie?with_genres=28">Action</button>
+          <button class="w-full text-left py-2 px-3 rounded hover:bg-[#07121a] categoryBtn" data-path="/discover/movie?with_genres=35">Comedy</button>
+          <button class="w-full text-left py-2 px-3 rounded hover:bg-[#07121a] categoryBtn" data-path="/discover/movie?with_genres=27">Horror</button>
+          <button class="w-full text-left py-2 px-3 rounded hover:bg-[#07121a] categoryBtn" data-path="/discover/movie?with_genres=99">Docs</button>
+        </nav>
+      </aside>
+
+      <!-- Main -->
+      <main class="main">
+        <!-- Hero -->
+        <section id="hero" class="rounded-lg overflow-hidden mb-8 relative" style="min-height:260px; background: linear-gradient(180deg,#07121a,#041018);">
+          <div class="p-6 md:p-10 flex flex-col md:flex-row md:items-end md:justify-between">
+            <div>
+              <h2 id="heroTitle" class="text-2xl md:text-4xl font-bold">Kasen Stream</h2>
+              <p id="heroDesc" class="text-gray-300 mt-2 max-w-2xl">A cleaner, calmer browsing experience. Click any card to open the player and resume where you left off.</p>
+            </div>
+            <div class="mt-4 md:mt-0">
+              <button id="heroPlayBtn" class="bg-teal-400 text-[#041018] px-4 py-2 rounded font-semibold">Play Featured</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Rows container -->
+        <div id="rows" class="space-y-8"></div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Player Modal (full-screen) -->
+  <div id="playerModal" class="fixed inset-0 z-50 hidden flex flex-col bg-black/95">
+    <div class="flex items-center justify-between p-4 border-b border-white/6">
+      <div>
+        <div id="playingTitle" class="font-semibold text-lg"></div>
+        <div id="playerSub" class="text-sm text-gray-300"></div>
+      </div>
+      <div class="flex items-center gap-3">
+        <button id="closePlayer" class="text-3xl leading-none px-3 py-1">×</button>
+      </div>
+    </div>
+
+    <div class="flex-1 relative">
+      <iframe id="embed_iframe" class="w-full h-full" frameborder="0"
+              allow="autoplay *; fullscreen *; picture-in-picture *; encrypted-media *"
+              allowfullscreen></iframe>
+    </div>
+  </div>
+
+  <script>
+    /***** CONFIG - set your player id and TMDB key *****/
+    const TMDB_KEY = '70c6183515ac89cbab2dbdea3a6c6124';
+    const TMDB_BASE = 'https://api.themoviedb.org/3';
+    const IMG_URL = 'https://image.tmdb.org/t/p/w500';
+    const EMBEDMASTER_BASE = 'https://embedmaster.link'; // change if needed
+    const EMBEDMASTER_PLAYER_ID = 'YOUR_PLAYER_ID_HERE'; // <-- set this
+
+    /***** Simple categories to render (you can edit) *****/
+    const ROWS = [
+      { id: 'r_trending', label: 'Trending Now', path: '/trending/all/week', isTV:false },
+      { id: 'r_top', label: 'Top Rated', path: '/movie/top_rated', isTV:false },
+      { id: 'r_tv', label: 'Popular TV', path: '/tv/popular', isTV:true },
+      { id: 'r_action', label: 'Action & Adventure', path: '/discover/movie?with_genres=28', isTV:false },
+      { id: 'r_comedy', label: 'Comedy', path: '/discover/movie?with_genres=35', isTV:false }
+    ];
+
+    /***** Helpers: localStorage progress *****/
+    function progressKey(id) { return 'ks_progress_' + id; }
+    function loadProgress(id) {
+      try {
+        const raw = localStorage.getItem(progressKey(id));
+        return raw ? JSON.parse(raw) : { seconds: 0 };
+      } catch (e) { return { seconds: 0 }; }
+    }
+    function saveProgress(id, obj) {
+      try { localStorage.setItem(progressKey(id), JSON.stringify(obj)); } catch(e) {}
+    }
+
+    /***** DOM refs *****/
+    const rowsContainer = document.getElementById('rows');
+    const iframe = document.getElementById('embed_iframe');
+    const playerModal = document.getElementById('playerModal');
+    const playingTitle = document.getElementById('playingTitle');
+    const playerSub = document.getElementById('playerSub');
+    const closePlayerBtn = document.getElementById('closePlayer');
+    const heroPlayBtn = document.getElementById('heroPlayBtn');
+    const searchBar = document.getElementById('searchBar');
+    const homeBtn = document.getElementById('homeBtn');
+
+    /***** Build rows UI *****/
+    function createRow(row) {
+      const section = document.createElement('section');
+      section.className = 'space-y-3';
+      section.innerHTML = `
+        <div class="flex items-center justify-between">
+          <h3 class="text-xl font-semibold">${row.label}</h3>
+          <div class="text-sm text-gray-400">Auto</div>
+        </div>
+        <div id="${row.id}" class="flex gap-4 overflow-x-auto py-2"></div>
+      `;
+      rowsContainer.appendChild(section);
+    }
+
+    async function fetchJson(url) {
+      const res = await fetch(url);
+      if (!res.ok) return null;
+      return res.json();
+    }
+
+    async function loadRow(row) {
+      const container = document.getElementById(row.id);
+      if (!container) return;
+      container.innerHTML = '<div class="text-gray-500 px-2">Loading...</div>';
+      const url = `${TMDB_BASE}${row.path}${row.path.includes('?') ? '&' : '?'}api_key=${TMDB_KEY}`;
+      const data = await fetchJson(url);
+      container.innerHTML = '';
+      if (!data || !data.results) {
+        container.innerHTML = '<div class="text-gray-500 px-2">Failed to load</div>';
+        return;
+      }
+      data.results.forEach(item => {
+        if (!item.poster_path) return;
+        const id = item.id;
+        const title = item.title || item.name || 'Untitled';
+        const poster = IMG_URL + item.poster_path;
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.style.minWidth = '170px';
+        card.style.height = '260px';
+        card.style.backgroundImage = `url(${poster})`;
+        card.setAttribute('data-id', id);
+        card.setAttribute('data-tv', row.isTV ? '1' : '0');
+
+        // overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'card-overlay';
+        overlay.innerHTML = `
+          <div style="flex:1">
+            <div class="font-semibold">${title.length>24?title.slice(0,22)+'…':title}</div>
+            <div class="text-xs text-gray-300 mt-1" id="meta-${id}"></div>
+            <div class="mt-3 progress-bar"><div id="fill-${id}" class="progress-fill"></div></div>
+          </div>
+        `;
+        card.appendChild(overlay);
+
+        // click opens player
+        card.addEventListener('click', () => openPlayer(item.id, title, row.isTV));
+
+        container.appendChild(card);
+
+        // update progress UI
+        updateCardProgressUI(item.id, row.isTV);
+      });
+    }
+
+    /***** Update card progress UI from saved seconds and runtime *****/
+    async function updateCardProgressUI(id, isTV = null) {
+      const fill = document.getElementById(`fill-${id}`);
+      const meta = document.getElementById(`meta-${id}`);
+      if (!fill && !meta) return;
+      const data = loadProgress(id);
+      // try to fetch runtime to compute percent
+      try {
+        if (isTV === null) {
+          const el = document.querySelector(`[data-id="${id}"]`);
+          isTV = el && el.getAttribute('data-tv') === '1';
+        }
+        const path = isTV ? `/tv/${id}` : `/movie/${id}`;
+        const info = await fetchJson(`${TMDB_BASE}${path}?api_key=${TMDB_KEY}`);
+        let runtimeSec = null;
+        if (info) {
+          if (isTV) {
+            const arr = info.episode_run_time || [];
+            runtimeSec = arr.length ? arr[0] * 60 : null;
+          } else {
+            runtimeSec = info.runtime ? info.runtime * 60 : null;
+          }
+        }
+        if (runtimeSec && data.seconds) {
+          const pct = Math.min(100, Math.round((data.seconds / runtimeSec) * 100));
+          if (fill) fill.style.width = pct + '%';
+          if (meta) meta.innerText = `${pct}% watched`;
+        } else {
+          // fallback: show up to 100s as 100%
+          const pct = Math.min(100, Math.round((data.seconds / 100) * 100));
+          if (fill) fill.style.width = pct + '%';
+          if (meta) meta.innerText = data.seconds ? `${Math.round(data.seconds)}s watched` : '';
+        }
+      } catch (e) {
+        if (meta) meta.innerText = data.seconds ? `${Math.round(data.seconds)}s watched` : '';
+      }
+    }
+
+    /***** Build embed URL (prefer imdb id if available) *****/
+    async function getImdbId(tmdbId, isTV=false) {
+      try {
+        const path = isTV ? `/tv/${tmdbId}/external_ids` : `/movie/${tmdbId}/external_ids`;
+        const res = await fetchJson(`${TMDB_BASE}${path}?api_key=${TMDB_KEY}`);
+        return res && res.imdb_id ? res.imdb_id : null;
+      } catch (e) { return null; }
+    }
+
+    async function buildEmbedUrl(tmdbId, isTV=false, season=1, episode=1) {
+      const imdb = await getImdbId(tmdbId, isTV);
+      const idForEmbed = imdb ? imdb : tmdbId;
+      if (EMBEDMASTER_PLAYER_ID && EMBEDMASTER_PLAYER_ID !== 'YOUR_PLAYER_ID_HERE') {
+        if (isTV) return `${EMBEDMASTER_BASE}/${EMBEDMASTER_PLAYER_ID}/tv/${idForEmbed}/${season}/${episode}`;
+        return `${EMBEDMASTER_BASE}/${EMBEDMASTER_PLAYER_ID}/movie/${idForEmbed}`;
+      } else {
+        // fallback: direct path without player id
+        if (isTV) return `${EMBEDMASTER_BASE}/tv/${idForEmbed}/${season}/${episode}`;
+        return `${EMBEDMASTER_BASE}/movie/${idForEmbed}`;
+      }
+    }
+
+    /***** Player open/close + save/resume logic *****/
+    let current = null; // {tmdbId, isTV}
+    let lastKnownTime = 0;
+    let sessionStart = 0;
+
+    async function openPlayer(tmdbId, title, isTV=false) {
+      current = { tmdbId, isTV };
+      playingTitle.innerText = title;
+      playerSub.innerText = isTV ? 'TV' : 'Movie';
+      document.body.classList.add('player-open');
+      playerModal.classList.remove('hidden');
+
+      // build embed url and set iframe
+      const url = await buildEmbedUrl(tmdbId, isTV);
+      iframe.src = url + (url.includes('?') ? '&' : '?') + 'autoplay=true';
+
+      // attempt resume after load
+      iframe.onload = () => {
+        const saved = loadProgress(tmdbId);
+        if (saved && saved.seconds > 5) {
+          // ask player to seek (player must support postMessage 'seek' command)
+          sendCommand('seek', Math.floor(saved.seconds));
+        }
+        // start session timer fallback
+        sessionStart = Date.now();
+      };
+    }
+
+    function closePlayer() {
+      // accumulate session time if any
+      if (sessionStart) {
+        const delta = (Date.now() - sessionStart) / 1000;
+        const saved = loadProgress(current.tmdbId);
+        saved.seconds = Math.max(saved.seconds || 0, Math.round((saved.seconds || 0) + delta));
+        saveProgress(current.tmdbId, saved);
+        sessionStart = 0;
+      }
+      // if lastKnownTime is available, prefer it
+      if (lastKnownTime && current) {
+        const saved = loadProgress(current.tmdbId);
+        saved.seconds = Math.max(saved.seconds || 0, Math.round(lastKnownTime));
+        saveProgress(current.tmdbId, saved);
+      }
+      // update UI
+      if (current) updateCardProgressUI(current.tmdbId, current.isTV);
+      // clear iframe and hide
+      iframe.src = '';
+      playerModal.classList.add('hidden');
+      document.body.classList.remove('player-open');
+      current = null;
+      lastKnownTime = 0;
+    }
+
+    closePlayerBtn.addEventListener('click', closePlayer);
+
+    // also close on Escape
+    window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !playerModal.classList.contains('hidden')) closePlayer(); });
+
+    /***** postMessage: listen for player events (EmbedMaster style) *****/
+    window.addEventListener('message', (event) => {
+      const data = event.data;
+      if (!data) return;
+      // Accept both 'embedmaster_player' and 'embedmaster_player_event' sources
+      if (data.source !== 'embedmaster_player' && data.source !== 'embedmaster_player_event') return;
+      // typical fields: data.event, data.info.currentTime
+      if (data.event === 'timeupdate' && data.info && typeof data.info.currentTime === 'number') {
+        lastKnownTime = data.info.currentTime;
+        if (current && current.tmdbId) {
+          const saved = loadProgress(current.tmdbId);
+          saved.seconds = Math.round(data.info.currentTime);
+          saveProgress(current.tmdbId, saved);
+          updateCardProgressUI(current.tmdbId, current.isTV);
+        }
+      }
+      if (data.event === 'ended' && current && current.tmdbId) {
+        // reset saved progress on ended
+        const saved = loadProgress(current.tmdbId);
+        saved.seconds = 0;
+        saveProgress(current.tmdbId, saved);
+        updateCardProgressUI(current.tmdbId, current.isTV);
+      }
+    });
+
+    /***** send commands to player (seek only used here) *****/
+    function sendCommand(command, value=null) {
+      if (!iframe || !iframe.contentWindow) return;
+      iframe.contentWindow.postMessage({ source: 'embedmaster_player_command', command, value }, '*');
+    }
+
+    /***** Search handling (simple) *****/
+    searchBar.addEventListener('input', async (e) => {
+      const q = e.target.value.trim();
+      const rowsEl = document.getElementById('rows');
+      if (q.length > 2) {
+        // show a single search row
+        rowsEl.innerHTML = `<section class="space-y-3"><h3 class="text-xl font-semibold">Search results for "${q}"</h3><div id="searchRow" class="flex gap-4 overflow-x-auto py-2"></div></section>`;
+        const data = await fetchJson(`${TMDB_BASE}/search/multi?api_key=${TMDB_KEY}&query=${encodeURIComponent(q)}`);
+        const container = document.getElementById('searchRow');
+        container.innerHTML = '';
+        (data.results || []).forEach(item => {
+          if (!item.poster_path) return;
+          const id = item.id;
+          const title = item.title || item.name || 'Untitled';
+          const poster = IMG_URL + item.poster_path;
+          const card = document.createElement('div');
+          card.className = 'card';
+          card.style.minWidth = '170px';
+          card.style.height = '260px';
+          card.style.backgroundImage = `url(${poster})`;
+          card.setAttribute('data-id', id);
+          card.setAttribute('data-tv', item.media_type === 'tv' ? '1' : '0');
+          const overlay = document.createElement('div');
+          overlay.className = 'card-overlay';
+          overlay.innerHTML = `<div style="flex:1"><div class="font-semibold">${title.length>24?title.slice(0,22)+'…':title}</div><div class="text-xs text-gray-300 mt-1" id="meta-${id}"></div><div class="mt-3 progress-bar"><div id="fill-${id}" class="progress-fill"></div></div></div>`;
+          card.appendChild(overlay);
+          card.addEventListener('click', () => openPlayer(item.id, title, item.media_type === 'tv'));
+          container.appendChild(card);
+          updateCardProgressUI(item.id, item.media_type === 'tv');
+        });
+      } else {
+        // restore default rows
+        rowsContainer.innerHTML = '';
+        initRows();
+      }
+    });
+
+    /***** Home button: scroll to top and close player if open (avoid overlap) *****/
+    homeBtn.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      // close player if open to avoid overlap
+      if (!playerModal.classList.contains('hidden')) closePlayer();
+    });
+
+    /***** Hero play: play first trending item if available *****/
+    heroPlayBtn.addEventListener('click', async () => {
+      // try to open first trending item
+      const data = await fetchJson(`${TMDB_BASE}/trending/all/week?api_key=${TMDB_KEY}`);
+      if (data && data.results && data.results[0]) {
+        const item = data.results[0];
+        openPlayer(item.id, item.title || item.name || 'Featured', false);
+      }
+    });
+
+    /***** Init rows *****/
+    function initRows() {
+      rowsContainer.innerHTML = '';
+      ROWS.forEach(r => {
+        createRow(r);
+        loadRow(r);
+      });
+    }
+    initRows();
+
+    /***** PWA: register a minimal service worker for offline shell caching *****/
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {
+        // if registration fails (e.g., running file://), ignore silently
+      });
+    }
+
+    /***** Minimal service worker file creation note:
+       - The code above attempts to register /sw.js. For local testing without a server,
+         registration may fail. If you host this on a server, create /sw.js with a simple
+         cache-first shell strategy. Example sw.js content:
+
+         const CACHE = 'ks-shell-v1';
+         self.addEventListener('install', e => {
+           e.waitUntil(caches.open(CACHE).then(c => c.addAll(['/','/index.html'])));
+         });
+         self.addEventListener('fetch', e => {
+           e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
+         });
+
+       - If you want, I can generate a ready-to-drop sw.js next.
+    *****/
+
+    /***** Dev helper: expose functions to console *****/
+    window.ks = {
+      openPlayer,
+      closePlayer,
+      loadProgress,
+      saveProgress,
+      updateCardProgressUI
+    };
+  </script>
 </body>
 </html>
