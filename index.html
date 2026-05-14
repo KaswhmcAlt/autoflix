@@ -3,319 +3,250 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0" />
-  <title>Kasen Stream</title>
+  <title>Kasen Stream | Unlimited</title>
 
-  <!-- PWA & iOS Optimization -->
+  <!-- PWA & Mobile Optimization -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Kasen Stream">
-  <link rel="apple-touch-icon" href="https://via.placeholder.com/192/00f5d4/0a0a0f?text=K">
-  <link rel="manifest" href='data:application/manifest+json,{"name":"Kasen Stream","short_name":"K-Stream","start_url":".","display":"standalone","background_color":"#0a0a0f","theme_color":"#00f5d4","icons":[{"src":"https://via.placeholder.com/192/00f5d4/0a0a0f?text=K","sizes":"192x192","type":"image/png"}]}'>
-
-  <!-- Scripts -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: { 'neon-teal': '#00f5d4', 'deep-black': '#0a0a0f' }
-        }
-      }
-    }
-  </script>
-
+  
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Space+Grotesk:wght@500&display=swap');
-    body { background: #0a0a0f; color: #e0f2f5; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-    .logo-font { font-family: 'Space Grotesk', sans-serif; }
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+    
+    body { 
+      background: #050505; 
+      color: #fff; 
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      margin: 0;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #050505; }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+
+    .hero-gradient {
+      background: linear-gradient(0deg, #050505 0%, rgba(5,5,5,0) 100%);
+    }
+
+    .movie-card {
+      aspect-ratio: 2/3;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      cursor: pointer;
+    }
+
+    .movie-card:hover {
+      transform: scale(1.05);
+      z-index: 10;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+    }
+
+    .nav-blur {
+      background: rgba(5, 5, 5, 0.8);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+    }
+
+    .active-nav {
+      color: #00f5d4;
+      border-bottom: 2px solid #00f5d4;
+    }
+
+    /* Fix for mobile category bar */
     .no-scrollbar::-webkit-scrollbar { display: none; }
-    .card {
-      transition: all 0.3s ease;
-      min-width: 140px; height: 210px;
-      border-radius: 12px; background-size: cover; background-position: center;
-      position: relative; flex-shrink: 0; cursor: pointer;
-    }
-    @media (min-width: 768px) { .card { min-width: 180px; height: 270px; } }
-    .card:hover { transform: translateY(-5px); box-shadow: 0 0 20px rgba(0,245,212,0.4); }
-    .card-overlay {
-      position: absolute; inset: 0; border-radius: 12px;
-      background: linear-gradient(to top, rgba(10,10,15,0.9) 10%, transparent 60%);
-      display: flex; flex-direction: column; justify-content: flex-end; padding: 12px;
-    }
   </style>
 </head>
-<body class="antialiased select-none">
+<body class="antialiased">
 
-  <!-- HEADER -->
-  <header class="fixed top-0 inset-x-0 z-50 bg-[#0a0a0f]/80 backdrop-blur-md border-b border-white/5">
-    <div class="max-w-screen-2xl mx-auto px-4 lg:px-8 h-16 flex items-center justify-between gap-4">
-      <div class="flex items-center gap-2" onclick="location.reload()">
-        <div class="w-8 h-8 rounded-lg bg-neon-teal flex items-center justify-center text-black font-bold">K</div>
-        <h1 class="logo-font text-xl hidden sm:block">KASEN <span class="text-neon-teal text-xs tracking-widest">STREAM</span></h1>
-      </div>
-
-      <div class="flex-1 max-w-md">
-        <input id="searchBar" type="text" placeholder="Search..." class="w-full bg-white/5 border border-white/10 rounded-full px-4 py-1.5 text-sm focus:outline-none focus:border-neon-teal">
-      </div>
-
-      <div class="flex items-center gap-3">
-        <div id="userProfile" onclick="showProfileModal()" class="hidden sm:flex items-center gap-2 cursor-pointer">
-          <span id="profileAvatar" class="text-xl"></span>
-          <span id="profileName" class="text-sm font-medium"></span>
+  <!-- TOP NAV -->
+  <nav class="fixed top-0 inset-x-0 z-[100] nav-blur border-b border-white/5">
+    <div class="max-w-[1800px] mx-auto px-4 md:px-10 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-8">
+        <h1 class="text-2xl font-extrabold tracking-tighter text-white" onclick="location.reload()" style="cursor:pointer">
+          KASEN<span class="text-[#00f5d4]">STREAM</span>
+        </h1>
+        <div class="hidden lg:flex items-center gap-6 text-sm font-semibold text-gray-400">
+          <button onclick="loadSection('trending')" class="hover:text-white transition">Trending</button>
+          <button onclick="loadSection('movie')" class="hover:text-white transition">Movies</button>
+          <button onclick="loadSection('tv')" class="hover:text-white transition">TV Shows</button>
+          <button onclick="loadSection('action')" class="hover:text-white transition">Action</button>
         </div>
-        <button id="authBtn" onclick="toggleAuthModal()" class="text-xs font-bold uppercase tracking-wider bg-white/5 px-4 py-2 rounded-full border border-white/10">Sign In</button>
+      </div>
+
+      <div class="flex items-center gap-4 flex-1 max-w-sm ml-4">
+        <div class="relative w-full">
+          <input id="searchBar" type="text" placeholder="Search movies..." 
+                 class="w-full bg-white/10 border-none rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-[#00f5d4] outline-none transition">
+        </div>
       </div>
     </div>
-  </header>
+  </nav>
 
-  <!-- MOBILE GENRE BAR (Fixes mobile visibility) -->
-  <div class="lg:hidden fixed top-16 inset-x-0 z-40 bg-[#0a0a0f] border-b border-white/5 overflow-x-auto no-scrollbar flex items-center gap-4 px-4 h-12">
-    <button onclick="showHome()" class="whitespace-nowrap text-xs font-bold text-neon-teal">Home</button>
-    <button onclick="switchCategoryById(28)" class="whitespace-nowrap text-xs text-white/60">Action</button>
-    <button onclick="switchCategoryById(35)" class="whitespace-nowrap text-xs text-white/60">Comedy</button>
-    <button onclick="switchCategoryById(878)" class="whitespace-nowrap text-xs text-white/60">Sci-Fi</button>
-    <button onclick="switchCategoryById(27)" class="whitespace-nowrap text-xs text-white/60">Horror</button>
-    <button onclick="switchCategoryById(16)" class="whitespace-nowrap text-xs text-white/60">Animation</button>
+  <!-- MOBILE GENRE PICKER -->
+  <div class="lg:hidden fixed top-16 inset-x-0 z-[90] nav-blur border-b border-white/5 flex items-center gap-6 px-4 h-12 overflow-x-auto no-scrollbar text-xs font-bold uppercase tracking-widest text-gray-400">
+    <button onclick="loadSection('trending')" class="whitespace-nowrap">🔥 Trending</button>
+    <button onclick="loadSection('movie')" class="whitespace-nowrap">🎬 Movies</button>
+    <button onclick="loadSection('tv')" class="whitespace-nowrap">📺 TV</button>
+    <button onclick="loadSection('action')" class="whitespace-nowrap">💥 Action</button>
+    <button onclick="loadSection('horror')" class="whitespace-nowrap">👻 Horror</button>
+    <button onclick="loadSection('comedy')" class="whitespace-nowrap">😂 Comedy</button>
   </div>
 
-  <div class="pt-28 lg:pt-20 flex max-w-screen-2xl mx-auto">
-    <!-- PC SIDEBAR -->
-    <aside class="hidden lg:flex w-64 flex-col p-6 sticky top-20 h-[calc(100vh-5rem)] border-r border-white/5">
-      <nav class="space-y-6">
-        <div>
-          <p class="text-[10px] uppercase tracking-[3px] text-white/40 mb-4">Browse</p>
-          <div class="space-y-2">
-            <button onclick="showHome()" class="flex items-center gap-3 w-full text-left px-3 py-2 rounded-xl hover:bg-white/5 text-sm">🏠 Home</button>
-            <button onclick="switchCategoryById(28)" class="flex items-center gap-3 w-full text-left px-3 py-2 rounded-xl hover:bg-white/5 text-sm">🔥 Action</button>
-            <button onclick="switchCategoryById(35)" class="flex items-center gap-3 w-full text-left px-3 py-2 rounded-xl hover:bg-white/5 text-sm">😂 Comedy</button>
-            <button onclick="switchCategoryById(878)" class="flex items-center gap-3 w-full text-left px-3 py-2 rounded-xl hover:bg-white/5 text-sm">🚀 Sci-Fi</button>
-            <button onclick="switchCategoryById(27)" class="flex items-center gap-3 w-full text-left px-3 py-2 rounded-xl hover:bg-white/5 text-sm">👻 Horror</button>
-            <button onclick="switchCategoryById(10751)" class="flex items-center gap-3 w-full text-left px-3 py-2 rounded-xl hover:bg-white/5 text-sm">👪 Family</button>
-          </div>
-        </div>
-      </nav>
-    </aside>
-
-    <!-- MAIN CONTENT -->
-    <main class="flex-1 px-4 lg:px-8 pb-20">
-      <div id="rows" class="space-y-10">
-        <!-- Rows injected here -->
+  <main id="content" class="pt-28 lg:pt-16 pb-20">
+    <!-- HERO SECTION -->
+    <section id="hero" class="relative h-[60vh] md:h-[80vh] w-full overflow-hidden flex items-end mb-10">
+      <div id="heroBg" class="absolute inset-0 bg-cover bg-center transition-opacity duration-1000"></div>
+      <div class="absolute inset-0 hero-gradient"></div>
+      <div class="relative px-4 md:px-10 pb-10 max-w-3xl">
+        <h2 id="heroTitle" class="text-4xl md:text-7xl font-extrabold mb-4 leading-none"></h2>
+        <p id="heroDesc" class="text-gray-300 text-sm md:text-lg mb-6 line-clamp-3"></p>
+        <button id="heroPlay" class="bg-white text-black px-8 py-3 rounded-full font-bold text-lg hover:bg-[#00f5d4] transition flex items-center gap-2">
+          <span>▶</span> Play Now
+        </button>
       </div>
-    </main>
-  </div>
+    </section>
+
+    <!-- CONTENT GRID -->
+    <div class="px-4 md:px-10">
+      <h3 id="gridTitle" class="text-xl md:text-2xl font-bold mb-6">Featured Content</h3>
+      <div id="movieGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
+        <!-- Cards will populate here -->
+      </div>
+      <div id="loadingTrigger" class="h-20 flex items-center justify-center text-gray-500 italic">
+        Scroll for more...
+      </div>
+    </div>
+  </main>
 
   <!-- PLAYER MODAL -->
-  <div id="playerModal" class="fixed inset-0 z-[100] bg-black hidden flex flex-col">
-    <div class="h-14 flex items-center justify-between px-6 border-b border-white/5">
-      <span id="playingTitle" class="font-bold truncate max-w-[70%]"></span>
-      <button onclick="closePlayer()" class="text-2xl">&times;</button>
+  <div id="playerModal" class="fixed inset-0 z-[200] bg-black hidden flex flex-col">
+    <div class="h-16 flex items-center justify-between px-6 border-b border-white/10">
+      <h4 id="nowPlaying" class="font-bold truncate"></h4>
+      <button onclick="closePlayer()" class="text-3xl text-gray-400 hover:text-white transition">&times;</button>
     </div>
-    <iframe id="playerFrame" class="flex-1 w-full h-full" frameborder="0" allowfullscreen></iframe>
-  </div>
-
-  <!-- AUTH MODAL -->
-  <div id="authModal" class="fixed inset-0 z-[200] bg-black/90 hidden flex items-center justify-center p-4">
-    <div class="bg-zinc-900 w-full max-w-sm p-8 rounded-3xl border border-white/10">
-      <h2 id="authTitle" class="text-2xl font-bold mb-6">Sign In</h2>
-      <input id="emailIn" type="email" placeholder="Email" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl mb-3">
-      <input id="passIn" type="password" placeholder="Password" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl mb-6">
-      <button onclick="handleAuth()" class="w-full bg-neon-teal text-black font-bold p-4 rounded-xl mb-4">Continue</button>
-      <p class="text-center text-xs text-white/40 cursor-pointer" onclick="toggleAuthMode()">Don't have an account? Sign Up</p>
-    </div>
-  </div>
-
-  <!-- PROFILE SELECTOR MODAL -->
-  <div id="profileModal" class="fixed inset-0 z-[300] bg-black hidden flex items-center justify-center">
-    <div class="text-center w-full max-w-2xl px-6">
-      <h2 class="text-3xl font-bold mb-10">Who's watching?</h2>
-      <div id="profilesGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-8 mb-10"></div>
-      <button onclick="auth.signOut(); location.reload();" class="text-white/40 text-sm hover:text-white">Sign Out</button>
+    <div class="flex-1 bg-black">
+      <iframe id="videoFrame" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
     </div>
   </div>
 
   <script>
-    /***** CONFIG *****/
-    const firebaseConfig = {
-      apiKey: "AIzaSyAJyF96lyKO4M0tl-GJQj5GV1lSBezgJiM",
-      authDomain: "kasenflix.firebaseapp.com",
-      projectId: "kasenflix",
-      storageBucket: "kasenflix.firebasestorage.app",
-      messagingSenderId: "939784452025",
-      appId: "1:939784452025:web:fb48e9764df6a473786868"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-
     const TMDB_KEY = '70c6183515ac89cbab2dbdea3a6c6124';
     const TMDB_BASE = 'https://api.themoviedb.org/3';
-    const IMG_URL = 'https://image.tmdb.org/t/p/w342';
-    const EMBED = 'https://embedmaster.link';
+    const IMG_BASE = 'https://image.tmdb.org/t/p/original';
+    const POSTER_BASE = 'https://image.tmdb.org/t/p/w500';
 
-    let currentUser = null, currentProfile = null, isSignUp = false;
+    let currentPage = 1;
+    let currentEndpoint = '/trending/all/week';
+    let isFetching = false;
 
-    /***** AUTH & PROFILES *****/
-    auth.onAuthStateChanged(async (user) => {
-      if (user) {
-        currentUser = user;
-        document.getElementById('authBtn').classList.add('hidden');
-        document.getElementById('userProfile').classList.remove('hidden');
-        await loadProfiles();
-      } else {
-        showHome();
-      }
-    });
+    // Initialize
+    async function init() {
+      await loadHero();
+      loadSection('trending');
+    }
 
-    async function handleAuth() {
-      const email = document.getElementById('emailIn').value;
-      const pass = document.getElementById('passIn').value;
+    async function loadHero() {
+      const res = await fetch(`${TMDB_BASE}/trending/all/day?api_key=${TMDB_KEY}`);
+      const data = await res.json();
+      const movie = data.results[0];
+      
+      document.getElementById('heroBg').style.backgroundImage = `url(${IMG_BASE}${movie.backdrop_path})`;
+      document.getElementById('heroTitle').innerText = movie.title || movie.name;
+      document.getElementById('heroDesc').innerText = movie.overview;
+      document.getElementById('heroPlay').onclick = () => openPlayer(movie.id, movie.title || movie.name, movie.media_type === 'tv');
+    }
+
+    async function loadSection(type) {
+      document.getElementById('movieGrid').innerHTML = '';
+      currentPage = 1;
+      
+      const endpoints = {
+        'trending': '/trending/all/week',
+        'movie': '/movie/popular',
+        'tv': '/tv/popular',
+        'action': '/discover/movie?with_genres=28',
+        'horror': '/discover/movie?with_genres=27',
+        'comedy': '/discover/movie?with_genres=35'
+      };
+
+      currentEndpoint = endpoints[type];
+      document.getElementById('gridTitle').innerText = type.toUpperCase();
+      await fetchMovies();
+    }
+
+    async function fetchMovies() {
+      if (isFetching) return;
+      isFetching = true;
+
+      const connector = currentEndpoint.includes('?') ? '&' : '?';
+      const url = `${TMDB_BASE}${currentEndpoint}${connector}api_key=${TMDB_KEY}&page=${currentPage}`;
+      
       try {
-        if (isSignUp) {
-          const res = await auth.createUserWithEmailAndPassword(email, pass);
-          await db.collection('users').doc(res.user.uid).collection('profiles').add({ name: email.split('@')[0], avatar: "👾" });
-        } else {
-          await auth.signInWithEmailAndPassword(email, pass);
-        }
-        document.getElementById('authModal').classList.add('hidden');
-      } catch (e) { alert(e.message); }
-    }
-
-    async function loadProfiles() {
-      const snap = await db.collection('users').doc(currentUser.uid).collection('profiles').get();
-      const profiles = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      const grid = document.getElementById('profilesGrid');
-      grid.innerHTML = profiles.map(p => `
-        <div onclick="selectProfile('${p.id}')" class="group flex flex-col items-center gap-3 cursor-pointer">
-          <div class="w-24 h-24 sm:w-32 sm:h-32 bg-zinc-800 rounded-2xl flex items-center justify-center text-5xl group-hover:ring-4 ring-neon-teal transition-all">${p.avatar}</div>
-          <p class="text-white/60 group-hover:text-white font-medium">${p.name}</p>
-        </div>
-      `).join('') + `
-        <div onclick="createNewProfile()" class="flex flex-col items-center gap-3 cursor-pointer">
-          <div class="w-24 h-24 sm:w-32 sm:h-32 border-2 border-dashed border-white/10 rounded-2xl flex items-center justify-center text-4xl text-white/10">+</div>
-          <p class="text-white/10">Add</p>
-        </div>`;
-      document.getElementById('profileModal').classList.remove('hidden');
-    }
-
-    function selectProfile(id) {
-      db.collection('users').doc(currentUser.uid).collection('profiles').doc(id).get().then(doc => {
-        currentProfile = { id, ...doc.data() };
-        document.getElementById('profileName').textContent = currentProfile.name;
-        document.getElementById('profileAvatar').textContent = currentProfile.avatar;
-        document.getElementById('profileModal').classList.add('hidden');
-        showHome();
-      });
-    }
-
-    async function createNewProfile() {
-      const name = prompt("Profile Name:");
-      if (name) {
-        await db.collection('users').doc(currentUser.uid).collection('profiles').add({ name, avatar: "🔥" });
-        loadProfiles();
-      }
-    }
-
-    /***** CORE LOGIC & PROGRESS *****/
-    async function showHome() {
-      const container = document.getElementById('rows');
-      container.innerHTML = '';
+        const res = await fetch(url);
+        const data = await res.json();
+        renderCards(data.results);
+        currentPage++;
+      } catch (e) { console.error(e); }
       
-      // 1. ADD CONTINUE WATCHING (Only if logged in)
-      if (currentUser && currentProfile) {
-        const progSnap = await db.collection('users').doc(currentUser.uid)
-          .collection('profiles').doc(currentProfile.id)
-          .collection('progress').orderBy('updatedAt', 'desc').limit(10).get();
+      isFetching = false;
+    }
+
+    function renderCards(movies) {
+      const grid = document.getElementById('movieGrid');
+      movies.forEach(m => {
+        if (!m.poster_path) return;
+        const isTV = m.media_type === 'tv' || (!m.title && m.name);
         
-        if (!progSnap.empty) {
-          const rowId = "row-continue";
-          container.insertAdjacentHTML('beforeend', `<section>
-            <h2 class="text-lg font-bold mb-4 flex items-center gap-2">▶️ Continue Watching</h2>
-            <div id="${rowId}" class="flex gap-4 overflow-x-auto no-scrollbar"></div>
-          </section>`);
-          
-          progSnap.forEach(async (doc) => {
-            const data = doc.data();
-            const movie = await (await fetch(`${TMDB_BASE}/${data.isTV?'tv':'movie'}/${doc.id}?api_key=${TMDB_KEY}`)).json();
-            addCardToRow(movie, rowId, data.isTV);
-          });
-        }
-      }
-
-      // 2. STANDARD ROWS
-      const rows = [
-        { label: "Trending Now", url: `${TMDB_BASE}/trending/all/week?api_key=${TMDB_KEY}` },
-        { label: "Action Blockbusters", url: `${TMDB_BASE}/discover/movie?with_genres=28&api_key=${TMDB_KEY}` },
-        { label: "Hilarious Comedies", url: `${TMDB_BASE}/discover/movie?with_genres=35&api_key=${TMDB_KEY}` }
-      ];
-
-      rows.forEach(r => {
-        const id = `row-${Math.random().toString(36).substr(2,9)}`;
-        container.insertAdjacentHTML('beforeend', `<section>
-          <h2 class="text-lg font-bold mb-4">${r.label}</h2>
-          <div id="${id}" class="flex gap-4 overflow-x-auto no-scrollbar"></div>
-        </section>`);
-        fetch(r.url).then(res => res.json()).then(data => {
-          data.results.forEach(m => addCardToRow(m, id));
-        });
+        const card = document.createElement('div');
+        card.className = 'movie-card bg-zinc-900 rounded-xl overflow-hidden relative group';
+        card.innerHTML = `
+          <img src="${POSTER_BASE}${m.poster_path}" class="w-full h-full object-cover" loading="lazy">
+          <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition flex items-center justify-center p-4">
+            <p class="text-center text-sm font-bold">${m.title || m.name}</p>
+          </div>
+        `;
+        card.onclick = () => openPlayer(m.id, m.title || m.name, isTV);
+        grid.appendChild(card);
       });
     }
 
-    function addCardToRow(m, rowId, forceTV = false) {
-      if (!m.poster_path) return;
-      const isTV = forceTV || m.media_type === 'tv' || (!m.title && m.name);
-      const card = document.createElement('div');
-      card.className = "card";
-      card.style.backgroundImage = `url(${IMG_URL}${m.poster_path})`;
-      card.innerHTML = `<div class="card-overlay"><p class="text-xs font-bold truncate">${m.title || m.name}</p></div>`;
-      card.onclick = () => openPlayer(m.id, m.title || m.name, isTV);
-      document.getElementById(rowId).appendChild(card);
-    }
-
-    async function openPlayer(id, title, isTV) {
-      const frame = document.getElementById('playerFrame');
-      document.getElementById('playingTitle').textContent = title;
-      document.getElementById('playerModal').classList.remove('hidden');
+    function openPlayer(id, title, isTV) {
+      const modal = document.getElementById('playerModal');
+      const frame = document.getElementById('videoFrame');
+      document.getElementById('nowPlaying').innerText = title;
       
-      let startAt = 0;
-      if (currentUser && currentProfile) {
-        const doc = await db.collection('users').doc(currentUser.uid).collection('profiles').doc(currentProfile.id).collection('progress').doc(id.toString()).get();
-        if (doc.exists) startAt = doc.data().seconds;
-      }
-
-      frame.src = `${EMBED}/${isTV ? 'tv' : 'movie'}/${id}${isTV ? '/1/1' : ''}?autoplay=1`;
-      
-      // Save progress event (Manual for demo - ideally use postMessage from player)
-      if (currentUser && currentProfile) {
-        db.collection('users').doc(currentUser.uid).collection('profiles').doc(currentProfile.id).collection('progress').doc(id.toString()).set({
-          title, isTV, seconds: 1, updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        }, { merge: true });
-      }
+      const type = isTV ? 'tv' : 'movie';
+      frame.src = `https://embedmaster.link/${type}/${id}${isTV ? '/1/1' : ''}?autoplay=1`;
+      modal.classList.remove('hidden');
     }
 
     function closePlayer() {
-      document.getElementById('playerFrame').src = '';
       document.getElementById('playerModal').classList.add('hidden');
+      document.getElementById('videoFrame').src = '';
     }
 
-    function switchCategoryById(id) {
-      const container = document.getElementById('rows');
-      container.innerHTML = `<h2 class="text-xl font-bold mb-6 px-2">Category Results</h2><div id="grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>`;
-      fetch(`${TMDB_BASE}/discover/movie?with_genres=${id}&api_key=${TMDB_KEY}`).then(res => res.json()).then(data => {
-        data.results.forEach(m => addCardToRow(m, 'grid'));
-      });
-    }
+    // Infinite Scroll Logic
+    window.onscroll = () => {
+      if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 800) {
+        fetchMovies();
+      }
+    };
 
-    function toggleAuthModal() { document.getElementById('authModal').classList.toggle('hidden'); }
-    function toggleAuthMode() { 
-      isSignUp = !isSignUp; 
-      document.getElementById('authTitle').textContent = isSignUp ? "Create Account" : "Sign In";
-    }
+    // Search Logic
+    document.getElementById('searchBar').oninput = async (e) => {
+      const query = e.target.value;
+      if (query.length > 2) {
+        document.getElementById('gridTitle').innerText = `Results for "${query}"`;
+        currentEndpoint = `/search/multi?query=${encodeURIComponent(query)}`;
+        document.getElementById('movieGrid').innerHTML = '';
+        currentPage = 1;
+        fetchMovies();
+      } else if (query.length === 0) {
+        loadSection('trending');
+      }
+    };
 
-    showHome();
+    init();
   </script>
 </body>
 </html>
