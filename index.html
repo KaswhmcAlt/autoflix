@@ -3,15 +3,155 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#e50914">
-    <title>AutoFlix</title>
+    <title>Kasen Stream</title>
+    <!-- PWA Setup -->
+    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Kasen%20Stream%22,%22short_name%22:%22K-Stream%22,%22start_url%22:%22index.html%22,%22display%22:%22standalone%22,%22background_color%22:%22#141414%22,%22theme_color%22:%22#141414%22,%22icons%22:[{%22src%22:%22https://i.ibb.co/67wTJd9R/pngimg-com-netflix-PNG11.png%22,%22sizes%22:%22192x192%22,%22type%22:%22image/png%22}]}">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="manifest" href="manifest.json">
-    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body::-webkit-scrollbar { display: none; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .movie-card { transition: transform 0.3s ease; min-width: 160px; height: 240px; cursor: pointer; border-radius: 4px; background-size: cover; background-position: center; }
+        .movie-card:hover { transform: scale(1.1); z-index: 50; border: 2px solid white; }
+        #navbar.scrolled { background-color: #141414; }
+    </style>
 </head>
-<body class="bg-black text-white">
-    <div id="app"></div>
-    <script src="js/app.js"></script>
+<body class="bg-[#141414] text-white font-sans overflow-x-hidden">
+
+    <!-- Nav -->
+    <nav id="navbar" class="fixed top-0 w-full z-[100] transition-all p-4 flex justify-between items-center bg-gradient-to-b from-black/90 to-transparent">
+        <div class="flex items-center gap-6">
+            <img src="https://i.ibb.co/67wTJd9R/pngimg-com-netflix-PNG11.png" class="h-6 md:h-8 ml-2" alt="Logo">
+            <div class="hidden md:flex gap-4 text-sm font-light">
+                <a href="#" class="hover:text-gray-300">Home</a>
+                <a href="#tv-row" class="hover:text-gray-300">TV Shows</a>
+                <a href="#action-row" class="hover:text-gray-300">Action</a>
+            </div>
+        </div>
+        <input type="text" id="searchBar" placeholder="Search..." class="bg-black/60 border border-gray-600 rounded px-4 py-1 text-sm focus:outline-none focus:border-white w-32 md:w-64">
+    </nav>
+
+    <!-- Hero -->
+    <div id="hero" class="relative h-[80vh] w-full bg-cover bg-top flex items-end pb-24 pl-8 md:pl-16 shadow-[inset_0_-180px_120px_-20px_#141414]">
+        <div class="max-w-2xl z-10">
+            <h1 id="heroTitle" class="text-5xl md:text-7xl font-black mb-4 uppercase italic">Kasen Stream</h1>
+            <p id="heroDesc" class="text-sm md:text-lg mb-6 line-clamp-3 text-gray-200">Loading the world's best content...</p>
+            <button id="heroPlayBtn" class="bg-white text-black px-12 py-3 rounded font-bold hover:bg-gray-300 transition text-lg flex items-center gap-2">▶ Play</button>
+        </div>
+    </div>
+
+    <!-- Movie Rows -->
+    <div class="px-8 md:px-16 -mt-16 relative z-20 space-y-10 pb-20">
+        <div id="searchSection" class="hidden">
+            <h2 class="text-xl font-bold text-red-600">Results</h2>
+            <div id="searchRow" class="flex overflow-x-scroll gap-3 py-4 scrollbar-hide"></div>
+        </div>
+
+        <div>
+            <h2 class="text-xl font-bold mb-2">Trending Now</h2>
+            <div id="trendingRow" class="flex overflow-x-scroll gap-3 py-4 scrollbar-hide"></div>
+        </div>
+
+        <div id="tv-row">
+            <h2 class="text-xl font-bold mb-2">Popular TV Shows</h2>
+            <div id="tvRow" class="flex overflow-x-scroll gap-3 py-4 scrollbar-hide"></div>
+        </div>
+
+        <div id="action-row">
+            <h2 class="text-xl font-bold mb-2">Action & Adventure</h2>
+            <div id="actionRow" class="flex overflow-x-scroll gap-3 py-4 scrollbar-hide"></div>
+        </div>
+
+        <div>
+            <h2 class="text-xl font-bold mb-2">Horror Hits</h2>
+            <div id="horrorRow" class="flex overflow-x-scroll gap-3 py-4 scrollbar-hide"></div>
+        </div>
+    </div>
+
+    <!-- Player Modal -->
+    <div id="playerModal" class="fixed inset-0 bg-black z-[200] hidden flex flex-col">
+        <div class="p-4 flex justify-between items-center">
+            <span id="playingTitle" class="font-bold text-gray-400"></span>
+            <button id="closePlayer" class="text-3xl">&times;</button>
+        </div>
+        <iframe id="videoPlayer" class="w-full h-full" src="" frameborder="0" allowfullscreen allow="autoplay"></iframe>
+    </div>
+
+    <script>
+        const API_KEY = '70c6183515ac89cbab2dbdea3a6c6124';
+        const BASE_URL = 'https://api.themoviedb.org/3';
+        const IMG_URL = 'https://image.tmdb.org/t/p/original';
+        
+        // Exact player settings from your request
+        const PARAMS = "autoplay=true&poster=true&title=true&download=true&watchparty=true&chromecast=true&servericon=true&setting=true&pip=true&icons=netflix&primarycolor=6C63FF&secondarycolor=9F9BFF&iconcolor=FFFFFF&logourl=https%3A%2F%2Fi.ibb.co%2F67wTJd9R%2Fpngimg-com-netflix-PNG11.png&font=Roboto&fontcolor=FFFFFF&fontsize=20&opacity=0.5";
+
+        async function getRow(path, divId, isTV = false) {
+            const res = await fetch(`${BASE_URL}${path}${path.includes('?') ? '&' : '?'}api_key=${API_KEY}`);
+            const data = await res.json();
+            const row = document.getElementById(divId);
+            data.results.forEach(item => {
+                if(!item.poster_path) return;
+                const card = document.createElement('div');
+                card.className = 'movie-card';
+                card.style.backgroundImage = `url(${IMG_URL + item.poster_path})`;
+                card.onclick = () => openPlayer(item.id, item.title || item.name, isTV);
+                row.appendChild(card);
+            });
+            if(divId === 'trendingRow') updateHero(data.results[0]);
+        }
+
+        function updateHero(m) {
+            document.getElementById('hero').style.backgroundImage = `url(${IMG_URL + m.backdrop_path})`;
+            document.getElementById('heroTitle').innerText = m.title || m.name;
+            document.getElementById('heroDesc').innerText = m.overview;
+            document.getElementById('heroPlayBtn').onclick = () => openPlayer(m.id, m.title || m.name, false);
+        }
+
+        function openPlayer(id, title, isTV) {
+            document.getElementById('playingTitle').innerText = title;
+            // Uses the specific URL format for movies vs TV from your instructions
+            const type = isTV ? `tv/${id}/1/1` : `movie/${id}`;
+            document.getElementById('videoPlayer').src = `https://player.vidplus.to/embed/${type}?${PARAMS}`;
+            document.getElementById('playerModal').classList.remove('hidden');
+        }
+
+        document.getElementById('closePlayer').onclick = () => {
+            document.getElementById('playerModal').classList.add('hidden');
+            document.getElementById('videoPlayer').src = "";
+        };
+
+        // Search logic
+        document.getElementById('searchBar').addEventListener('input', async (e) => {
+            const q = e.target.value;
+            if(q.length > 2) {
+                document.getElementById('searchSection').classList.remove('hidden');
+                const res = await fetch(`${BASE_URL}/search/multi?api_key=${API_KEY}&query=${q}`);
+                const data = await res.json();
+                const row = document.getElementById('searchRow');
+                row.innerHTML = '';
+                data.results.forEach(item => {
+                    if(!item.poster_path) return;
+                    const card = document.createElement('div');
+                    card.className = 'movie-card';
+                    card.style.backgroundImage = `url(${IMG_URL + item.poster_path})`;
+                    card.onclick = () => openPlayer(item.id, item.title || item.name, item.media_type === 'tv');
+                    row.appendChild(card);
+                });
+            } else {
+                document.getElementById('searchSection').classList.add('hidden');
+            }
+        });
+
+        window.onscroll = () => {
+            if (window.scrollY > 50) document.getElementById('navbar').classList.add('scrolled');
+            else document.getElementById('navbar').classList.remove('scrolled');
+        };
+
+        // Load all sections
+        getRow('/trending/all/week', 'trendingRow');
+        getRow('/tv/popular', 'tvRow', true);
+        getRow('/discover/movie?with_genres=28', 'actionRow');
+        getRow('/discover/movie?with_genres=27', 'horrorRow');
+    </script>
 </body>
 </html>
