@@ -1,17 +1,451 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#e50914">
-    <title>AutoFlix</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="manifest" href="manifest.json">
-    <link rel="stylesheet" href="css/style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Kasen Stream — EmbedMaster Edition</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body::-webkit-scrollbar { display: none; }
+    .movie-card { transition: transform .22s ease, box-shadow .22s ease; min-width: 160px; height: 240px; cursor: pointer; border-radius: 6px; background-size: cover; background-position: center; position: relative; overflow: hidden; }
+    .movie-card:hover { transform: translateY(-6px) scale(1.03); box-shadow: 0 10px 30px rgba(0,0,0,.6); z-index: 40; }
+    .poster-overlay { position:absolute; inset:0; background: linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,.6) 100%); display:flex; align-items:flex-end; padding:10px; gap:8px; }
+    .progress-bar { height:6px; background:rgba(255,255,255,.12); border-radius:4px; overflow:hidden; width:100%; }
+    .progress-fill { height:100%; background:linear-gradient(90deg,#6C63FF,#9F9BFF); width:0%; transition:width .3s ease; }
+    #playerModal { backdrop-filter: blur(6px); }
+    .row-title { display:flex; align-items:center; gap:12px; }
+    .pill { background:rgba(255,255,255,.06); padding:6px 10px; border-radius:999px; font-size:12px; }
+    .card-meta { font-size:12px; color:#ddd; }
+    .hero-gradient { box-shadow: inset 0 -220px 120px -20px #141414; }
+    .small-btn { background: rgba(255,255,255,.08); padding:6px 8px; border-radius:6px; font-size:13px; }
+    .controls button { background:#222; color:#fff; padding:8px 10px; border-radius:6px; border: none; cursor:pointer; }
+  </style>
 </head>
-<body class="bg-black text-white">
-    <div id="app"></div>
-    <script src="js/app.js"></script>
+<body class="bg-[#0b0b0b] text-white font-sans">
+
+  <!-- NAV -->
+  <nav id="navbar" class="fixed top-0 w-full z-50 p-4 flex justify-between items-center bg-gradient-to-b from-black/80 to-transparent">
+    <div class="flex items-center gap-6">
+      <img src="https://i.ibb.co/67wTJd9R/pngimg-com-netflix-PNG11.png" class="h-8" alt="Logo">
+      <div class="hidden md:flex gap-4 text-sm font-medium text-gray-200">
+        <a href="#" class="hover:text-white">Home</a>
+        <a href="#tv-row" class="hover:text-white">TV Shows</a>
+        <a href="#movies" class="hover:text-white">Movies</a>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <input id="searchBar" placeholder="Search movies, shows..." class="bg-[#111] border border-gray-700 rounded px-4 py-2 text-sm w-44 md:w-72 focus:outline-none" />
+      <button id="profileBtn" class="hidden md:block pill">Kasen</button>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <header id="hero" class="relative h-[72vh] md:h-[78vh] w-full bg-cover bg-center hero-gradient flex items-end pb-20 px-8 md:px-16" style="background-image: linear-gradient(180deg, rgba(0,0,0,0.15), rgba(0,0,0,0.45));">
+    <div class="max-w-3xl z-10">
+      <h1 id="heroTitle" class="text-4xl md:text-6xl font-extrabold tracking-tight uppercase">Kasen Stream</h1>
+      <p id="heroDesc" class="mt-4 text-gray-300 max-w-xl line-clamp-3">Loading the world's best content...</p>
+      <div class="mt-6 flex gap-4">
+        <button id="heroPlayBtn" class="bg-white text-black px-6 py-3 rounded font-bold hover:bg-gray-200 flex items-center gap-2">▶ Play</button>
+        <button id="heroMoreBtn" class="bg-[#2b2b2b] px-4 py-3 rounded text-sm">More Info</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENT -->
+  <main class="pt-8 md:pt-24 px-6 md:px-12 pb-24">
+    <section id="searchSection" class="hidden mb-8">
+      <h2 class="text-xl font-semibold text-red-500">Results</h2>
+      <div id="searchRow" class="flex gap-4 overflow-x-auto py-4"></div>
+    </section>
+
+    <div id="rowsContainer" class="space-y-10"></div>
+  </main>
+
+  <!-- PLAYER MODAL -->
+  <div id="playerModal" class="fixed inset-0 z-60 hidden flex flex-col bg-black/90">
+    <div class="p-4 flex justify-between items-center border-b border-white/6">
+      <div>
+        <div id="playingTitle" class="font-semibold text-lg"></div>
+        <div id="playerMeta" class="text-sm text-gray-300"></div>
+      </div>
+      <div class="flex items-center gap-4">
+        <div class="text-sm text-gray-300">Progress: <span id="playerProgressText">0%</span></div>
+        <button id="closePlayer" class="text-3xl leading-none">&times;</button>
+      </div>
+    </div>
+
+    <div class="flex-1 relative">
+      <!-- EmbedMaster iframe -->
+      <iframe id="embedmaster_iframe"
+              width="100%"
+              height="100%"
+              frameborder="0"
+              allow="autoplay *; fullscreen *; picture-in-picture *; encrypted-media *"
+              allowfullscreen></iframe>
+
+      <!-- small overlay controls -->
+      <div class="absolute left-4 bottom-4 flex gap-2 controls">
+        <button onclick="sendPlayerCommand('play')" class="small-btn">Play</button>
+        <button onclick="sendPlayerCommand('pause')" class="small-btn">Pause</button>
+        <button onclick="sendPlayerCommand('mute')" class="small-btn">Mute</button>
+        <button onclick="sendPlayerCommand('unmute')" class="small-btn">Unmute</button>
+        <button onclick="sendPlayerCommand('fullscreen')" class="small-btn">Fullscreen</button>
+      </div>
+    </div>
+
+    <div class="p-4 border-t border-white/6 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="pill" id="watchCount">Views: 0</div>
+        <div class="pill" id="savedSeconds">Saved: 0s</div>
+      </div>
+      <div class="text-sm text-gray-300">Auto-saves when player sends timeupdate or on close</div>
+    </div>
+  </div>
+
+  <script>
+    /* ====== CONFIG ====== */
+    const TMDB_KEY = '70c6183515ac89cbab2dbdea3a6c6124'; // your TMDB key
+    const TMDB_BASE = 'https://api.themoviedb.org/3';
+    const IMG_URL = 'https://image.tmdb.org/t/p/original';
+    const EMBEDMASTER_BASE = 'https://embedmaster.link'; // change if your provider domain differs
+    const EMBEDMASTER_PLAYER_ID = 'YOUR_PLAYER_ID_HERE'; // <-- set your EmbedMaster player id
+
+    /* ====== Categories (edit to add/remove) ====== */
+    const CATEGORIES = [
+      { label: 'Trending Now', path: '/trending/all/week', isTV: false, id: 'trendingRow' },
+      { label: 'Top Rated', path: '/movie/top_rated', isTV: false, id: 'topRatedRow' },
+      { label: 'Popular TV Shows', path: '/tv/popular', isTV: true, id: 'tvRow' },
+      { label: 'Action & Adventure', path: '/discover/movie?with_genres=28', isTV: false, id: 'actionRow' },
+      { label: 'Comedy', path: '/discover/movie?with_genres=35', isTV: false, id: 'comedyRow' },
+      { label: 'Horror Hits', path: '/discover/movie?with_genres=27', isTV: false, id: 'horrorRow' },
+      { label: 'Documentaries', path: '/discover/movie?with_genres=99', isTV: false, id: 'docRow' }
+    ];
+
+    /* ====== localStorage helpers ====== */
+    function saveProgress(id, data) {
+      localStorage.setItem('ks_embed_progress_' + id, JSON.stringify(data));
+    }
+    function loadProgress(id) {
+      const raw = localStorage.getItem('ks_embed_progress_' + id);
+      return raw ? JSON.parse(raw) : { seconds: 0, views: 0 };
+    }
+
+    /* ====== DOM helpers ====== */
+    const rowsContainer = document.getElementById('rowsContainer');
+
+    function createRowSection(cat) {
+      const section = document.createElement('section');
+      section.className = 'space-y-3';
+      section.innerHTML = `
+        <div class="row-title">
+          <h2 class="text-2xl font-semibold">${cat.label}</h2>
+          <div class="ml-4 text-sm text-gray-300 pill">Auto</div>
+        </div>
+        <div id="${cat.id}" class="flex gap-4 overflow-x-auto py-2"></div>
+      `;
+      rowsContainer.appendChild(section);
+    }
+
+    function createCard(item, isTV) {
+      const id = item.id;
+      const title = item.title || item.name || 'Untitled';
+      const poster = item.poster_path ? IMG_URL + item.poster_path : '';
+      const card = document.createElement('div');
+      card.className = 'movie-card';
+      card.style.backgroundImage = `url(${poster})`;
+      card.setAttribute('data-id', id);
+      card.setAttribute('data-title', title);
+      card.setAttribute('data-tv', isTV ? '1' : '0');
+
+      const overlay = document.createElement('div');
+      overlay.className = 'poster-overlay';
+      overlay.innerHTML = `
+        <div style="flex:1">
+          <div class="font-semibold">${title.length>22?title.slice(0,20)+'…':title}</div>
+          <div class="card-meta mt-1" id="meta-${id}"></div>
+          <div class="mt-2 progress-bar"><div id="fill-${id}" class="progress-fill"></div></div>
+        </div>
+        <div class="flex flex-col items-end gap-2">
+          <button class="bg-white text-black rounded px-3 py-1 text-sm" data-play>▶</button>
+          <div class="text-xs text-gray-300" id="views-${id}">0 views</div>
+        </div>
+      `;
+      card.appendChild(overlay);
+
+      card.querySelector('[data-play]').addEventListener('click', (e) => {
+        e.stopPropagation();
+        openEmbedmasterPlayer(id, title, isTV);
+      });
+      card.addEventListener('click', () => openEmbedmasterPlayer(id, title, isTV));
+
+      return card;
+    }
+
+    /* ====== TMDB fetch helpers ====== */
+    async function fetchJson(url) {
+      const res = await fetch(url);
+      return res.ok ? res.json() : null;
+    }
+
+    async function getRow(path, divId, isTV=false) {
+      try {
+        const data = await fetchJson(`${TMDB_BASE}${path}${path.includes('?') ? '&' : '?'}api_key=${TMDB_KEY}`);
+        const row = document.getElementById(divId);
+        if (!row || !data || !data.results) return;
+        row.innerHTML = '';
+        data.results.forEach(item => {
+          if (!item.poster_path) return;
+          const card = createCard(item, isTV);
+          row.appendChild(card);
+          updateCardProgressUI(item.id, item, isTV);
+        });
+        if (divId === 'trendingRow' && data.results[0]) updateHero(data.results[0]);
+      } catch (err) {
+        console.error('getRow error', err);
+      }
+    }
+
+    async function fetchRuntime(id, isTV) {
+      try {
+        const path = isTV ? `/tv/${id}` : `/movie/${id}`;
+        const data = await fetchJson(`${TMDB_BASE}${path}?api_key=${TMDB_KEY}`);
+        if (!data) return null;
+        if (isTV) {
+          const arr = data.episode_run_time || [];
+          return arr.length ? arr[0] * 60 : null;
+        } else {
+          return data.runtime ? data.runtime * 60 : null;
+        }
+      } catch (e) {
+        return null;
+      }
+    }
+
+    async function getImdbIdFromTmdb(tmdbId, isTV=false) {
+      try {
+        const path = isTV ? `/tv/${tmdbId}/external_ids` : `/movie/${tmdbId}/external_ids`;
+        const data = await fetchJson(`${TMDB_BASE}${path}?api_key=${TMDB_KEY}`);
+        return data && data.imdb_id ? data.imdb_id : null;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    /* ====== Build EmbedMaster URL ====== */
+    async function buildEmbedUrl(tmdbId, isTV=false, season=1, episode=1) {
+      // prefer IMDb id if available (EmbedMaster accepts IMDb or TMDB)
+      const imdb = await getImdbIdFromTmdb(tmdbId, isTV);
+      const idForEmbed = imdb ? imdb : tmdbId;
+      if (!EMBEDMASTER_PLAYER_ID || EMBEDMASTER_PLAYER_ID === 'YOUR_PLAYER_ID_HERE') {
+        // fallback to using id without player id (EmbedMaster may accept direct path)
+        if (isTV) return `${EMBEDMASTER_BASE}/tv/${idForEmbed}/${season}/${episode}`;
+        return `${EMBEDMASTER_BASE}/movie/${idForEmbed}`;
+      }
+      if (isTV) return `${EMBEDMASTER_BASE}/${EMBEDMASTER_PLAYER_ID}/tv/${idForEmbed}/${season}/${episode}`;
+      return `${EMBEDMASTER_BASE}/${EMBEDMASTER_PLAYER_ID}/movie/${idForEmbed}`;
+    }
+
+    /* ====== Player control via postMessage ====== */
+    const iframe = document.getElementById('embedmaster_iframe');
+
+    function sendPlayerCommand(command, value = null) {
+      if (!iframe || !iframe.contentWindow) return;
+      iframe.contentWindow.postMessage({
+        source: 'embedmaster_player_command',
+        command,
+        value
+      }, '*');
+    }
+
+    /* ====== Player event handling & progress saving ====== */
+    let currentPlaying = null;
+    let sessionTimerStart = 0;
+    let sessionAccumulated = 0;
+    let lastKnownTime = 0;
+
+    window.addEventListener('message', (event) => {
+      const data = event.data;
+      if (!data) return;
+      // Accept both 'embedmaster_player' and 'embedmaster_player_event' sources depending on provider
+      if (data.source !== 'embedmaster_player' && data.source !== 'embedmaster_player_event') return;
+
+      // Typical fields: data.event, data.info
+      const ev = data.event;
+      const info = data.info || {};
+
+      if (!currentPlaying) return;
+
+      const key = currentPlaying.tmdbId || currentPlaying.embedId;
+      const progress = loadProgress(key);
+
+      if (ev === 'timeupdate' && typeof info.currentTime === 'number') {
+        // update saved seconds (throttle to avoid too frequent writes)
+        lastKnownTime = info.currentTime;
+        progress.seconds = info.currentTime;
+        saveProgress(key, progress);
+        updateCardProgressUI(key);
+        updatePlayerProgressUI(key);
+      }
+
+      if (ev === 'play') {
+        sessionTimerStart = Date.now();
+      }
+
+      if (ev === 'pause') {
+        if (sessionTimerStart) {
+          sessionAccumulated += (Date.now() - sessionTimerStart) / 1000;
+          sessionTimerStart = 0;
+        }
+        if (typeof info.currentTime === 'number') {
+          progress.seconds = info.currentTime;
+          saveProgress(key, progress);
+          updateCardProgressUI(key);
+          updatePlayerProgressUI(key);
+        }
+      }
+
+      if (ev === 'ended') {
+        progress.views = (progress.views || 0) + 1;
+        progress.seconds = 0;
+        saveProgress(key, progress);
+        updateCardProgressUI(key);
+        updatePlayerProgressUI(key);
+      }
+    });
+
+    /* ====== Open player and attempt resume ====== */
+    async function openEmbedmasterPlayer(tmdbId, title, isTV=false, season=1, episode=1) {
+      currentPlaying = { tmdbId, title, isTV, season, episode };
+      document.getElementById('playingTitle').innerText = title;
+      document.getElementById('playerMeta').innerText = isTV ? 'TV Show' : 'Movie';
+
+      const url = await buildEmbedUrl(tmdbId, isTV, season, episode);
+      // append autoplay param
+      iframe.src = url + (url.includes('?') ? '&' : '?') + 'autoplay=true';
+      document.getElementById('playerModal').classList.remove('hidden');
+
+      // update UI counters from saved progress
+      const progress = loadProgress(tmdbId);
+      progress.views = progress.views || 0;
+      document.getElementById('watchCount').innerText = `Views: ${progress.views}`;
+      document.getElementById('savedSeconds').innerText = `Saved: ${Math.round(progress.seconds)}s`;
+
+      // after iframe loads, attempt to resume by sending seek command (player must support it)
+      iframe.onload = () => {
+        setTimeout(() => {
+          const p = loadProgress(tmdbId);
+          if (p && p.seconds > 5) {
+            // send seek command to resume
+            sendPlayerCommand('seek', Math.floor(p.seconds));
+          }
+          // increment view count locally (optional)
+          p.views = (p.views || 0) + 1;
+          saveProgress(tmdbId, p);
+          document.getElementById('watchCount').innerText = `Views: ${p.views}`;
+          updateCardProgressUI(tmdbId);
+        }, 700);
+      };
+    }
+
+    document.getElementById('closePlayer').addEventListener('click', () => {
+      if (!currentPlaying) {
+        document.getElementById('playerModal').classList.add('hidden');
+        iframe.src = '';
+        return;
+      }
+      // if session timer running, accumulate
+      if (sessionTimerStart) {
+        sessionAccumulated += (Date.now() - sessionTimerStart) / 1000;
+        sessionTimerStart = 0;
+      }
+      const id = currentPlaying.tmdbId;
+      const progress = loadProgress(id);
+      // prefer lastKnownTime if available
+      if (lastKnownTime && lastKnownTime > progress.seconds) progress.seconds = lastKnownTime;
+      // also add sessionAccumulated as fallback
+      progress.seconds = Math.max(progress.seconds, (progress.seconds || 0) + Math.round(sessionAccumulated));
+      saveProgress(id, progress);
+      updateCardProgressUI(id);
+      updatePlayerProgressUI(id);
+      // clear iframe to stop playback
+      iframe.src = '';
+      document.getElementById('playerModal').classList.add('hidden');
+      // reset session counters
+      sessionAccumulated = 0;
+      lastKnownTime = 0;
+      currentPlaying = null;
+    });
+
+    /* ====== UI update helpers ====== */
+    async function updateCardProgressUI(id, item = null, isTV = null) {
+      // find DOM element
+      const el = document.querySelector(`[data-id="${id}"]`);
+      if (!el) return;
+      const data = loadProgress(id);
+      const fill = document.getElementById(`fill-${id}`);
+      const viewsEl = document.getElementById(`views-${id}`);
+      const metaEl = document.getElementById(`meta-${id}`);
+      if (viewsEl) viewsEl.innerText = `${data.views || 0} views`;
+      if (metaEl) metaEl.innerText = data.seconds ? `${Math.round(data.seconds)}s watched` : '';
+
+      // try to compute percent if runtime available
+      const runtime = await fetchRuntime(id, isTV || (el.getAttribute('data-tv') === '1'));
+      if (runtime && fill) {
+        const pct = Math.min(100, Math.round((data.seconds || 0) / runtime * 100));
+        fill.style.width = pct + '%';
+        if (metaEl) metaEl.innerText = `${pct}% watched`;
+      } else if (fill) {
+        const pct = Math.min(100, Math.round((data.seconds || 0) / 100 * 100));
+        fill.style.width = pct + '%';
+      }
+    }
+
+    function updatePlayerProgressUI(id) {
+      const data = loadProgress(id);
+      document.getElementById('playerProgressText').innerText = data.seconds ? `${Math.round(data.seconds)}s` : '0s';
+      document.getElementById('watchCount').innerText = `Views: ${data.views || 0}`;
+      document.getElementById('savedSeconds').innerText = `Saved: ${Math.round(data.seconds || 0)}s`;
+    }
+
+    /* ====== Search logic ====== */
+    document.getElementById('searchBar').addEventListener('input', async (e) => {
+      const q = e.target.value.trim();
+      const section = document.getElementById('searchSection');
+      const row = document.getElementById('searchRow');
+      if (q.length > 2) {
+        section.classList.remove('hidden');
+        try {
+          const data = await fetchJson(`${TMDB_BASE}/search/multi?api_key=${TMDB_KEY}&query=${encodeURIComponent(q)}`);
+          row.innerHTML = '';
+          (data.results || []).forEach(item => {
+            if (!item.poster_path) return;
+            const card = createCard(item, item.media_type === 'tv');
+            row.appendChild(card);
+            updateCardProgressUI(item.id, item, item.media_type === 'tv');
+          });
+        } catch (err) {
+          console.error('Search error', err);
+        }
+      } else {
+        section.classList.add('hidden');
+        row.innerHTML = '';
+      }
+    });
+
+    /* ====== Init: create rows and load them ====== */
+    (function init() {
+      CATEGORIES.forEach(cat => createRowSection(cat));
+      CATEGORIES.forEach(cat => getRow(cat.path, cat.id, cat.isTV));
+      document.getElementById('hero').style.backgroundColor = '#0b0b0b';
+    })();
+
+    /* ====== Dev helper: open a movie from console ======
+       Example: openEmbedmasterPlayer(597, 'Example Movie', false)
+    ===================================================== */
+    window.openEmbedmasterPlayer = openEmbedmasterPlayer;
+    window.sendPlayerCommand = sendPlayerCommand;
+    window.ks_loadProgress = loadProgress;
+    window.ks_saveProgress = saveProgress;
+  </script>
 </body>
 </html>
