@@ -5,10 +5,9 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Kasen Stream</title>
 
-  <!-- Tailwind CDN + custom config for neon accents -->
+  <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    // Tailwind config for premium cinematic theme
     tailwind.config = {
       content: [],
       theme: {
@@ -27,19 +26,13 @@
   <link rel="manifest" href='data:application/manifest+json,{"name":"Kasen Stream","short_name":"K-Stream","start_url":".","display":"standalone","background_color":"#0a0a0f","theme_color":"#00f5d4","icons":[{"src":"data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect width=%2264%22 height=%2264%22 rx=%2212%22 fill=%22%2300f5d4%22/%3E%3Cpath d=%22M20 22h24v4H20zM20 32h24v4H20zM20 42h18v4H20z%22 fill=%22%230a0a0f%22/%3E%3C/svg%3E","sizes":"192x192","type":"image/svg+xml"}]}'>
 
   <meta name="theme-color" content="#00f5d4" />
-  
+
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500&amp;display=swap');
     
-    :root {
-      --tw-color-primary: #00f5d4;
-    }
+    :root { --tw-color-primary: #00f5d4; }
     
-    * {
-      transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
-      transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-      transition-duration: 150ms;
-    }
+    * { transition-property: color, background-color, border-color, text-decoration-color, fill, stroke; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
     
     body {
       background: linear-gradient(180deg, #0a0a0f 0%, #050508 100%);
@@ -47,19 +40,15 @@
       font-family: 'Inter', system_ui, sans-serif;
     }
     
-    .logo-font {
-      font-family: 'Space Grotesk', sans-serif;
-    }
+    .logo-font { font-family: 'Space Grotesk', sans-serif; }
 
-    /* Glassmorphic header */
     #siteHeader {
-      background: rgba(10, 10, 15, 0.85);
+      background: rgba(10, 10, 15, 0.92);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.3);
     }
 
-    /* Hero */
     #hero {
       min-height: 520px;
       background-size: cover;
@@ -73,12 +62,8 @@
       background: linear-gradient(90deg, #0a0a0f 0%, rgba(10,10,15,0.4) 40%, rgba(10,10,15,0.85) 70%, #0a0a0f 100%);
       z-index: 1;
     }
-    .hero-content {
-      position: relative;
-      z-index: 2;
-    }
+    .hero-content { position: relative; z-index: 2; }
 
-    /* Cards - premium cinematic */
     .card {
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       border-radius: 16px;
@@ -91,12 +76,10 @@
       min-width: 180px;
       height: 270px;
     }
-    
     .card:hover {
       transform: translateY(-10px) scale(1.04);
       box-shadow: 0 25px 50px -12px rgb(0 245 212 / 0.3);
     }
-    
     .card .play-overlay {
       opacity: 0;
       position: absolute;
@@ -107,22 +90,18 @@
       justify-content: center;
       z-index: 10;
     }
-    
-    .card:hover .play-overlay {
-      opacity: 1;
-    }
+    .card:hover .play-overlay { opacity: 1; }
     
     .card-overlay {
       position: absolute;
       bottom: 0;
       left: 0;
       right: 0;
-      background: linear-gradient(180deg, transparent 30%, rgba(10,10,15,0.85) 85%);
+      background: linear-gradient(180deg, transparent 30%, rgba(10,10,15,0.92) 85%);
       padding: 20px 16px 16px;
       z-index: 20;
     }
     
-    /* Neon progress */
     .progress-bar {
       height: 5px;
       background: rgba(255,255,255,0.1);
@@ -137,43 +116,41 @@
       transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    /* Sidebar */
     .sidebar {
       background: rgba(15, 23, 42, 0.95);
       backdrop-filter: blur(16px);
       border-right: 1px solid rgba(255,255,255,0.08);
     }
     
-    /* Player modal */
     #playerModal {
       background: rgba(10, 10, 15, 0.98);
       backdrop-filter: blur(12px);
     }
     
-    /* Row labels */
     .row-label {
       font-size: 1.35rem;
       letter-spacing: -0.02em;
     }
     
-    /* Scroll snap for rows */
     .row-scroll {
       scroll-snap-type: x mandatory;
       -webkit-overflow-scrolling: touch;
     }
-    .row-scroll > * {
-      scroll-snap-align: start;
+    .row-scroll > * { scroll-snap-align: start; }
+
+    /* Auth & Profile modals */
+    .modal {
+      animation: fadeInScale 0.2s ease forwards;
     }
-    
-    /* Badge glow */
-    .badge {
-      box-shadow: 0 0 15px -2px rgb(0 245 212);
+    @keyframes fadeInScale {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
     }
   </style>
 </head>
 <body class="antialiased">
 
-  <!-- HEADER - glassmorphic + neon accent -->
+  <!-- HEADER -->
   <header id="siteHeader" class="fixed top-0 left-0 right-0 z-50 border-b border-white/10">
     <div class="max-w-screen-2xl mx-auto flex items-center justify-between px-8 py-4">
       
@@ -192,33 +169,32 @@
       <!-- Search -->
       <div class="flex-1 max-w-xl mx-8">
         <div class="relative">
-          <input 
-            id="searchBar" 
-            placeholder="Search movies, TV shows, actors..." 
-            class="w-full bg-white/10 hover:bg-white/15 border border-white/10 focus:border-[#00f5d4] text-white placeholder:text-white/50 rounded-3xl pl-12 py-3 text-sm focus:outline-none shadow-inner">
+          <input id="searchBar" placeholder="Search movies, TV shows..." 
+                 class="w-full bg-white/10 hover:bg-white/15 border border-white/10 focus:border-[#00f5d4] text-white placeholder:text-white/50 rounded-3xl pl-12 py-3 text-sm focus:outline-none">
           <div class="absolute left-5 top-1/2 -translate-y-1/2 text-white/40">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 01-14 0 7 7 0 0114 0z" />
-            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 01-14 0 7 7 0 0114 0z" /></svg>
           </div>
         </div>
       </div>
 
       <div class="flex items-center gap-x-6">
-        <!-- Home button -->
-        <button id="homeBtn" 
-                class="flex items-center gap-x-2 px-6 py-2.5 text-sm font-medium rounded-3xl hover:bg-white/10 text-white">
-          <span>Home</span>
-        </button>
-        
-        <!-- Fake profile -->
-        <div class="flex items-center gap-x-2">
-          <div class="text-right">
-            <div class="text-sm font-medium">Kasen</div>
-            <div class="text-xs text-white/50">Premium</div>
+        <!-- Home -->
+        <button onclick="showHome()" class="flex items-center gap-x-2 px-6 py-2.5 text-sm font-medium rounded-3xl hover:bg-white/10 text-white">Home</button>
+
+        <!-- Profile selector -->
+        <div onclick="showProfileModal()" class="flex items-center gap-x-3 cursor-pointer">
+          <div id="currentProfileDisplay" class="flex items-center gap-x-2">
+            <div id="profileAvatar" class="w-8 h-8 rounded-2xl bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-lg ring-2 ring-[#00f5d4]/30"></div>
+            <div>
+              <div id="profileName" class="text-sm font-medium"></div>
+            </div>
           </div>
-          <div class="w-8 h-8 rounded-2xl bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-xs font-bold ring-2 ring-[#00f5d4]/30">K</div>
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7" /></svg>
         </div>
+
+        <!-- Sign in / out -->
+        <button onclick="toggleAuthModal()" id="authBtn"
+                class="px-5 py-2 text-sm font-semibold rounded-3xl bg-white/10 hover:bg-white/20 text-white">Sign In</button>
       </div>
     </div>
   </header>
@@ -227,50 +203,45 @@
   <div class="pt-20">
     <div class="max-w-screen-2xl mx-auto flex gap-8 px-8">
 
-      <!-- SIDEBAR - glass + icons -->
-      <aside class="sidebar hidden lg:flex w-64 flex-col rounded-3xl p-6 text-sm h-[calc(100vh-6rem)] sticky top-6">
+      <!-- SIDEBAR - More categories -->
+      <aside class="sidebar hidden lg:flex w-72 flex-col rounded-3xl p-6 text-sm h-[calc(100vh-6rem)] sticky top-6">
         <nav class="space-y-1 flex-1">
-          <div class="font-semibold text-white/90 mb-6 flex items-center gap-x-2">
-            <span>Browse</span>
-          </div>
+          <div class="font-semibold text-white/90 mb-6 flex items-center gap-x-2">Browse</div>
           
           <button onclick="switchCategory(this)" data-path="/trending/all/week" class="categoryBtn flex w-full items-center gap-x-3 text-left px-4 py-4 rounded-2xl hover:bg-white/10 active:bg-[#00f5d4]/10 text-white font-medium">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-            Trending
+            🔥 Trending Now
           </button>
-          
           <button onclick="switchCategory(this)" data-path="/movie/top_rated" class="categoryBtn flex w-full items-center gap-x-3 text-left px-4 py-4 rounded-2xl hover:bg-white/10 active:bg-[#00f5d4]/10 text-white font-medium">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.975 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118L8.48 9.11c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
-            Top Rated
+            ⭐ Top Rated
           </button>
-          
           <button onclick="switchCategory(this)" data-path="/tv/popular" data-tv="1" class="categoryBtn flex w-full items-center gap-x-3 text-left px-4 py-4 rounded-2xl hover:bg-white/10 active:bg-[#00f5d4]/10 text-white font-medium">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 13l-5 5m0 0l-5-5m5 5V6" /></svg>
-            TV Shows
+            📺 TV Shows
           </button>
-          
+
           <div class="pt-6 border-t border-white/10 mt-6">
             <div class="font-semibold text-white/90 mb-4">Genres</div>
             <button onclick="switchCategory(this)" data-path="/discover/movie?with_genres=28" class="categoryBtn flex w-full items-center gap-x-3 text-left px-4 py-3 rounded-2xl hover:bg-white/10 text-white/80">🔥 Action</button>
+            <button onclick="switchCategory(this)" data-path="/discover/movie?with_genres=12" class="categoryBtn flex w-full items-center gap-x-3 text-left px-4 py-3 rounded-2xl hover:bg-white/10 text-white/80">🌌 Adventure</button>
+            <button onclick="switchCategory(this)" data-path="/discover/movie?with_genres=16" class="categoryBtn flex w-full items-center gap-x-3 text-left px-4 py-3 rounded-2xl hover:bg-white/10 text-white/80">🦸 Animation</button>
             <button onclick="switchCategory(this)" data-path="/discover/movie?with_genres=35" class="categoryBtn flex w-full items-center gap-x-3 text-left px-4 py-3 rounded-2xl hover:bg-white/10 text-white/80">😂 Comedy</button>
+            <button onclick="switchCategory(this)" data-path="/discover/movie?with_genres=18" class="categoryBtn flex w-full items-center gap-x-3 text-left px-4 py-3 rounded-2xl hover:bg-white/10 text-white/80">🎭 Drama</button>
             <button onclick="switchCategory(this)" data-path="/discover/movie?with_genres=27" class="categoryBtn flex w-full items-center gap-x-3 text-left px-4 py-3 rounded-2xl hover:bg-white/10 text-white/80">👻 Horror</button>
+            <button onclick="switchCategory(this)" data-path="/discover/movie?with_genres=878" class="categoryBtn flex w-full items-center gap-x-3 text-left px-4 py-3 rounded-2xl hover:bg-white/10 text-white/80">🚀 Sci-Fi</button>
+            <button onclick="switchCategory(this)" data-path="/discover/movie?with_genres=53" class="categoryBtn flex w-full items-center gap-x-3 text-left px-4 py-3 rounded-2xl hover:bg-white/10 text-white/80">🔪 Thriller</button>
             <button onclick="switchCategory(this)" data-path="/discover/movie?with_genres=99" class="categoryBtn flex w-full items-center gap-x-3 text-left px-4 py-3 rounded-2xl hover:bg-white/10 text-white/80">📜 Documentaries</button>
           </div>
-        </nav>
-        
-        <div class="mt-auto pt-8 border-t border-white/10 text-xs text-white/40 flex items-center justify-between">
-          <div>Made for Kasen</div>
-          <div class="flex gap-1">
-            <div class="w-2 h-2 bg-[#00f5d4] rounded-full animate-pulse"></div>
-            LIVE
+
+          <!-- Continue Watching (per profile) -->
+          <div onclick="loadContinueWatching()" class="mt-8 cursor-pointer flex items-center gap-x-3 text-left px-4 py-4 rounded-2xl hover:bg-white/10 active:bg-[#00f5d4]/10 text-white font-medium">
+            ▶️ Continue Watching
           </div>
-        </div>
+        </nav>
       </aside>
 
       <!-- MAIN CONTENT -->
       <main class="flex-1 min-w-0 pb-12">
         
-        <!-- CINEMATIC HERO -->
+        <!-- HERO -->
         <section id="hero" class="rounded-3xl overflow-hidden mb-12 relative">
           <div class="hero-content p-8 md:p-12 lg:p-16 flex flex-col justify-end h-full min-h-[520px]">
             <div class="max-w-lg">
@@ -290,23 +261,61 @@
           </div>
         </section>
 
-        <!-- ROWS CONTAINER -->
+        <!-- ROWS -->
         <div id="rows" class="space-y-12"></div>
       </main>
     </div>
   </div>
 
-  <!-- FULL-SCREEN PLAYER -->
+  <!-- AUTH MODAL -->
+  <div onclick="if(event.target.id==='authModal')hideAuthModal()" id="authModal" class="hidden fixed inset-0 bg-black/80 z-[10000] flex items-center justify-center">
+    <div onclick="event.stopImmediatePropagation()" class="modal bg-[#0a0a0f] rounded-3xl w-full max-w-md mx-4 p-8">
+      <div class="flex justify-between items-center mb-6">
+        <h2 id="authTitle" class="text-3xl font-semibold logo-font">Sign In</h2>
+        <button onclick="hideAuthModal()" class="text-4xl text-white/40 leading-none">×</button>
+      </div>
+      
+      <div class="flex border-b border-white/10 mb-6">
+        <button onclick="switchAuthTab(0)" id="tabSignIn" class="flex-1 pb-3 text-center font-medium border-b-2 border-[#00f5d4]">Sign In</button>
+        <button onclick="switchAuthTab(1)" id="tabSignUp" class="flex-1 pb-3 text-center font-medium">Sign Up</button>
+      </div>
+      
+      <div id="authForm">
+        <input id="emailInput" type="email" placeholder="Email" class="w-full mb-3 bg-white/10 border border-white/10 rounded-2xl px-5 py-4 text-white placeholder:text-white/40 focus:border-[#00f5d4]">
+        <input id="passwordInput" type="password" placeholder="Password" class="w-full mb-6 bg-white/10 border border-white/10 rounded-2xl px-5 py-4 text-white placeholder:text-white/40 focus:border-[#00f5d4]">
+        
+        <button onclick="handleAuth()" id="authSubmitBtn"
+                class="w-full bg-[#00f5d4] text-black font-semibold py-4 rounded-2xl text-lg">Sign In</button>
+        
+        <p id="authFooter" class="text-center text-xs text-white/40 mt-6">Demo mode — any email + password works</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROFILE SWITCHER MODAL (Netflix style) -->
+  <div onclick="if(event.target.id==='profileModal')hideProfileModal()" id="profileModal" class="hidden fixed inset-0 bg-black/80 z-[10000] flex items-center justify-center">
+    <div onclick="event.stopImmediatePropagation()" class="modal bg-[#0a0a0f] rounded-3xl w-full max-w-lg mx-4 p-8">
+      <h2 class="text-2xl font-semibold mb-6">Who's watching?</h2>
+      
+      <div id="profilesList" class="grid grid-cols-2 gap-6"></div>
+      
+      <div class="mt-8 flex justify-between">
+        <button onclick="hideProfileModal()" class="text-white/60 hover:text-white">Cancel</button>
+        <button onclick="addNewProfile()" class="flex items-center gap-x-2 text-[#00f5d4] hover:underline">
+          <span class="text-2xl">+</span> Add Profile
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PLAYER -->
   <div id="playerModal" class="fixed inset-0 z-[9999] hidden flex flex-col">
     <div class="flex items-center justify-between px-8 py-5 border-b border-white/10 bg-black/70 backdrop-blur-md">
       <div>
         <div id="playingTitle" class="text-xl font-semibold"></div>
         <div id="playerSub" class="text-white/60 text-sm"></div>
       </div>
-      
-      <div class="flex items-center gap-x-8">
-        <button onclick="closePlayer()" class="flex items-center justify-center w-10 h-10 rounded-2xl hover:bg-white/10 text-4xl leading-none text-white/80">×</button>
-      </div>
+      <button onclick="closePlayer()" class="flex items-center justify-center w-10 h-10 rounded-2xl hover:bg-white/10 text-4xl leading-none text-white/80">×</button>
     </div>
     
     <div class="flex-1 relative bg-black">
@@ -322,18 +331,36 @@
     const TMDB_BASE = 'https://api.themoviedb.org/3';
     const IMG_URL = 'https://image.tmdb.org/t/p/';
     const EMBEDMASTER_BASE = 'https://embedmaster.link';
-    const EMBEDMASTER_PLAYER_ID = 'YOUR_PLAYER_ID_HERE'; // Change this
+    const EMBEDMASTER_PLAYER_ID = 'YOUR_PLAYER_ID_HERE';
 
-    const ROWS = [
+    // Expanded categories
+    let ROWS = [
       { id: 'r_trending', label: 'Trending Now', path: '/trending/all/week', isTV: false },
       { id: 'r_top', label: 'Top Rated Movies', path: '/movie/top_rated', isTV: false },
       { id: 'r_tv', label: 'Popular TV Shows', path: '/tv/popular', isTV: true },
       { id: 'r_action', label: 'Action & Adventure', path: '/discover/movie?with_genres=28', isTV: false },
-      { id: 'r_comedy', label: 'Comedy', path: '/discover/movie?with_genres=35', isTV: false }
+      { id: 'r_comedy', label: 'Comedy', path: '/discover/movie?with_genres=35', isTV: false },
+      { id: 'r_scifi', label: 'Sci-Fi', path: '/discover/movie?with_genres=878', isTV: false },
+      { id: 'r_drama', label: 'Drama', path: '/discover/movie?with_genres=18', isTV: false }
     ];
 
-    /***** Progress helpers *****/
-    function progressKey(id) { return 'ks_progress_' + id; }
+    /***** STATE *****/
+    let currentUser = null;           // { id: number, name: string, email: string }
+    let currentProfile = null;        // { id: number, name: string, avatar: string }
+    let profiles = [
+      { id: 1, name: "Kasen", avatar: "👾" },
+      { id: 2, name: "Family", avatar: "👨‍👩‍👧" },
+      { id: 3, name: "Kids", avatar: "🧸" }
+    ];
+    let current = null;               // player state
+    let lastKnownTime = 0;
+    let sessionStart = 0;
+
+    /***** Progress (per profile) *****/
+    function progressKey(id) {
+      if (!currentProfile) return 'ks_progress_' + id;
+      return `ks_progress_${currentProfile.id}_${id}`;
+    }
     function loadProgress(id) {
       try {
         const raw = localStorage.getItem(progressKey(id));
@@ -351,22 +378,19 @@
     const playingTitle = document.getElementById('playingTitle');
     const playerSub = document.getElementById('playerSub');
     const searchBar = document.getElementById('searchBar');
-    const homeBtn = document.getElementById('homeBtn');
+    const profileNameEl = document.getElementById('profileName');
+    const profileAvatarEl = document.getElementById('profileAvatar');
+    const authBtn = document.getElementById('authBtn');
 
-    let current = null;
-    let lastKnownTime = 0;
-    let sessionStart = 0;
-
-    /***** Fetch helper *****/
+    /***** Helpers *****/
     async function fetchJson(url) {
       try {
         const res = await fetch(url);
-        if (!res.ok) return null;
-        return await res.json();
+        return res.ok ? await res.json() : null;
       } catch(e) { return null; }
     }
 
-    /***** Load dynamic cinematic hero *****/
+    /***** Load cinematic hero (first trending) *****/
     async function loadHero() {
       const heroEl = document.getElementById('hero');
       const titleEl = document.getElementById('heroTitle');
@@ -374,43 +398,32 @@
       const badgeEl = document.getElementById('heroBadge');
 
       const data = await fetchJson(`${TMDB_BASE}/trending/all/week?api_key=${TMDB_KEY}`);
-      if (!data || !data.results || !data.results[0]) return;
+      if (!data?.results?.[0]) return;
 
       const item = data.results[0];
       const isTV = !!item.name;
       
-      // Backdrop
-      if (item.backdrop_path) {
-        heroEl.style.backgroundImage = `url(${IMG_URL}original${item.backdrop_path})`;
-      }
+      if (item.backdrop_path) heroEl.style.backgroundImage = `url(${IMG_URL}original${item.backdrop_path})`;
       
-      // Content
-      titleEl.textContent = item.title || item.name || 'Featured';
+      titleEl.textContent = item.title || item.name;
       descEl.textContent = (item.overview || '').slice(0, 160) + '...';
       
-      // Badge
-      badgeEl.innerHTML = `
-        ${isTV ? '📺 TV SERIES' : '🎬 MOVIE'} 
-        <span class="text-[#00f5d4]">★</span> 
-        ${item.vote_average ? item.vote_average.toFixed(1) : 'N/A'}
-      `;
+      badgeEl.innerHTML = `${isTV ? '📺 SERIES' : '🎬 MOVIE'} <span class="text-[#00f5d4]">★</span> ${item.vote_average?.toFixed(1) || 'N/A'}`;
       
-      // Store for play button
       heroEl.dataset.id = item.id;
       heroEl.dataset.tv = isTV ? '1' : '0';
-      heroEl.dataset.title = item.title || item.name || 'Featured';
+      heroEl.dataset.title = item.title || item.name;
     }
 
-    /***** Play featured hero *****/
     window.playHero = function() {
       const hero = document.getElementById('hero');
-      const id = hero.dataset.id;
+      const id = parseInt(hero.dataset.id);
       const isTV = hero.dataset.tv === '1';
       const title = hero.dataset.title;
       if (id) openPlayer(id, title, isTV);
     };
 
-    /***** Create row UI *****/
+    /***** Create & load rows *****/
     function createRow(row) {
       const section = document.createElement('section');
       section.className = 'space-y-4';
@@ -424,87 +437,64 @@
       rowsContainer.appendChild(section);
     }
 
-    /***** Load content row *****/
     async function loadRow(row) {
       const container = document.getElementById(row.id);
       if (!container) return;
       
-      container.innerHTML = `<div class="flex items-center justify-center text-white/30 py-12">Loading stunning content…</div>`;
+      container.innerHTML = `<div class="text-white/30 py-12 text-center">Loading...</div>`;
       
       const url = `${TMDB_BASE}${row.path}${row.path.includes('?') ? '&' : '?'}api_key=${TMDB_KEY}&language=en-US`;
       const data = await fetchJson(url);
       
       container.innerHTML = '';
-      if (!data?.results?.length) {
-        container.innerHTML = `<div class="text-white/30">No results</div>`;
-        return;
-      }
+      if (!data?.results?.length) return;
 
       data.results.forEach(item => {
         if (!item.poster_path) return;
-        
         const id = item.id;
         const title = item.title || item.name || 'Untitled';
         const poster = IMG_URL + 'w342' + item.poster_path;
         const year = (item.release_date || item.first_air_date || '').slice(0,4);
-        const rating = item.vote_average ? item.vote_average.toFixed(1) : '?';
+        const rating = item.vote_average ? item.vote_average.toFixed(1) : '—';
         const isTV = row.isTV || item.media_type === 'tv';
 
         const cardHTML = `
-          <div class="card" data-id="${id}" data-tv="${isTV ? 1 : 0}" style="background-image: url('${poster}')">
-            <!-- Hover play overlay -->
+          <div class="card" data-id="${id}" data-tv="${isTV?1:0}" style="background-image:url('${poster}')">
             <div class="play-overlay">
               <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-2xl">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-black ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132z" />
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-black ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132z" /></svg>
               </div>
             </div>
-            
-            <!-- Bottom overlay -->
             <div class="card-overlay">
               <div class="flex justify-between items-start mb-2">
                 <div class="font-semibold text-base leading-tight">${title.length > 22 ? title.slice(0,20)+'…' : title}</div>
-                <div class="badge flex-shrink-0 bg-black/70 text-[#00f5d4] text-[10px] font-bold px-2 py-px rounded-xl">${rating}</div>
+                <div class="text-[10px] font-bold px-2 py-px rounded-xl bg-black/70 text-[#00f5d4]">${rating}</div>
               </div>
-              
               <div class="flex justify-between text-xs text-white/70 mb-3">
-                <span>${year || '—'}</span>
+                <span>${year}</span>
                 <span class="uppercase">${isTV ? 'TV' : 'MOVIE'}</span>
               </div>
-              
-              <!-- Progress -->
-              <div class="progress-bar">
-                <div id="fill-${id}" class="progress-fill" style="width:0%"></div>
-              </div>
+              <div class="progress-bar"><div id="fill-${id}" class="progress-fill" style="width:0%"></div></div>
             </div>
-          </div>
-        `;
+          </div>`;
 
-        const cardWrapper = document.createElement('div');
-        cardWrapper.innerHTML = cardHTML;
-        const card = cardWrapper.firstElementChild;
-        
-        card.addEventListener('click', () => {
-          openPlayer(id, title, isTV);
-        });
-        
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = cardHTML;
+        const card = wrapper.firstElementChild;
+        card.addEventListener('click', () => openPlayer(id, title, isTV));
         container.appendChild(card);
         
-        // Load progress
         updateCardProgressUI(id, isTV);
       });
     }
 
-    /***** Progress UI update *****/
+    /***** Progress UI *****/
     async function updateCardProgressUI(id, isTV = null) {
       const fill = document.getElementById(`fill-${id}`);
       if (!fill) return;
-      
       const data = loadProgress(id);
       if (!data.seconds) return;
-      
-      // Get runtime for accurate %
+
       try {
         const el = document.querySelector(`[data-id="${id}"]`);
         if (isTV === null && el) isTV = el.dataset.tv === '1';
@@ -512,26 +502,15 @@
         const path = isTV ? `/tv/${id}` : `/movie/${id}`;
         const info = await fetchJson(`${TMDB_BASE}${path}?api_key=${TMDB_KEY}`);
         
-        let runtimeSec = 0;
-        if (info) {
-          if (isTV && info.episode_run_time?.length) runtimeSec = info.episode_run_time[0] * 60;
-          else if (!isTV && info.runtime) runtimeSec = info.runtime * 60;
-        }
-        
-        let pct = 0;
-        if (runtimeSec > 0) {
-          pct = Math.min(100, Math.round((data.seconds / runtimeSec) * 100));
-        } else {
-          pct = Math.min(100, Math.round(data.seconds / 3)); // fallback
-        }
-        
+        let runtimeSec = info ? (isTV ? (info.episode_run_time?.[0]||30) * 60 : info.runtime * 60) : 7200;
+        const pct = Math.min(100, Math.round((data.seconds / runtimeSec) * 100));
         fill.style.width = pct + '%';
       } catch(e) {
-        fill.style.width = '30%'; // fallback
+        fill.style.width = '35%';
       }
     }
 
-    /***** Player functions (unchanged logic, new UI) *****/
+    /***** Player logic *****/
     async function getImdbId(tmdbId, isTV) {
       try {
         const path = isTV ? `/tv/${tmdbId}/external_ids` : `/movie/${tmdbId}/external_ids`;
@@ -543,32 +522,24 @@
     async function buildEmbedUrl(tmdbId, isTV) {
       const imdb = await getImdbId(tmdbId, isTV);
       const idForEmbed = imdb || tmdbId;
-      if (EMBEDMASTER_PLAYER_ID && EMBEDMASTER_PLAYER_ID !== 'YOUR_PLAYER_ID_HERE') {
-        return isTV 
-          ? `${EMBEDMASTER_BASE}/${EMBEDMASTER_PLAYER_ID}/tv/${idForEmbed}/1/1`
-          : `${EMBEDMASTER_BASE}/${EMBEDMASTER_PLAYER_ID}/movie/${idForEmbed}`;
-      }
-      return isTV 
-        ? `${EMBEDMASTER_BASE}/tv/${idForEmbed}/1/1`
-        : `${EMBEDMASTER_BASE}/movie/${idForEmbed}`;
+      const base = EMBEDMASTER_PLAYER_ID && EMBEDMASTER_PLAYER_ID !== 'YOUR_PLAYER_ID_HERE' 
+        ? `${EMBEDMASTER_BASE}/${EMBEDMASTER_PLAYER_ID}` 
+        : EMBEDMASTER_BASE;
+      return isTV ? `${base}/tv/${idForEmbed}/1/1` : `${base}/movie/${idForEmbed}`;
     }
 
     async function openPlayer(tmdbId, title, isTV = false) {
       current = { tmdbId, isTV };
       playingTitle.textContent = title;
-      playerSub.textContent = isTV ? 'TV Series • Season 1' : 'Movie';
+      playerSub.textContent = isTV ? 'TV Series' : 'Movie';
       
-      document.body.classList.add('player-open');
       playerModal.classList.remove('hidden');
-      
       const url = await buildEmbedUrl(tmdbId, isTV);
       iframe.src = url + (url.includes('?') ? '&' : '?') + 'autoplay=true';
       
       iframe.onload = () => {
         const saved = loadProgress(tmdbId);
-        if (saved.seconds > 10) {
-          sendCommand('seek', Math.floor(saved.seconds));
-        }
+        if (saved.seconds > 10) sendCommand('seek', Math.floor(saved.seconds));
         sessionStart = Date.now();
       };
     }
@@ -580,32 +551,25 @@
         saved.seconds = Math.max(saved.seconds || 0, Math.round((saved.seconds || 0) + delta));
         saveProgress(current.tmdbId, saved);
       }
-      
       if (lastKnownTime && current) {
         const saved = loadProgress(current.tmdbId);
         saved.seconds = Math.max(saved.seconds || 0, Math.round(lastKnownTime));
         saveProgress(current.tmdbId, saved);
       }
-      
       if (current) updateCardProgressUI(current.tmdbId, current.isTV);
       
       iframe.src = '';
       playerModal.classList.add('hidden');
-      document.body.classList.remove('player-open');
       current = null;
       lastKnownTime = 0;
     }
 
     function sendCommand(command, value = null) {
-      if (!iframe.contentWindow) return;
-      iframe.contentWindow.postMessage({
-        source: 'embedmaster_player_command',
-        command: command,
-        value: value
-      }, '*');
+      if (iframe.contentWindow) {
+        iframe.contentWindow.postMessage({ source: 'embedmaster_player_command', command, value }, '*');
+      }
     }
 
-    /***** Message listener for player progress *****/
     window.addEventListener('message', (event) => {
       const data = event.data;
       if (!data || (data.source !== 'embedmaster_player' && data.source !== 'embedmaster_player_event')) return;
@@ -619,7 +583,6 @@
           updateCardProgressUI(current.tmdbId, current.isTV);
         }
       }
-      
       if (data.event === 'ended' && current) {
         saveProgress(current.tmdbId, { seconds: 0 });
         updateCardProgressUI(current.tmdbId, current.isTV);
@@ -635,31 +598,20 @@
             <h3 class="row-label font-semibold text-white">Results for “${q}”</h3>
             <div id="searchRow" class="flex gap-4 overflow-x-auto row-scroll pb-6"></div>
           </section>`;
-        
         const data = await fetchJson(`${TMDB_BASE}/search/multi?api_key=${TMDB_KEY}&query=${encodeURIComponent(q)}`);
         const container = document.getElementById('searchRow');
         container.innerHTML = '';
-        
         (data?.results || []).forEach(item => {
           if (!item.poster_path) return;
           const id = item.id;
-          const title = item.title || item.name || 'Untitled';
+          const title = item.title || item.name || '';
           const poster = IMG_URL + 'w342' + item.poster_path;
           const isTV = item.media_type === 'tv';
-          
           const cardHTML = `
             <div class="card" style="background-image:url('${poster}')" data-id="${id}" data-tv="${isTV?1:0}">
-              <div class="play-overlay">
-                <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-2xl">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-black ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132z" /></svg>
-                </div>
-              </div>
-              <div class="card-overlay">
-                <div class="font-semibold">${title}</div>
-                <div class="progress-bar mt-4"><div id="fill-${id}" class="progress-fill"></div></div>
-              </div>
+              <div class="play-overlay"><div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-2xl"><svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-black ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132z" /></svg></div></div>
+              <div class="card-overlay"><div class="font-semibold">${title}</div><div class="progress-bar mt-4"><div id="fill-${id}" class="progress-fill"></div></div></div>
             </div>`;
-          
           const wrapper = document.createElement('div');
           wrapper.innerHTML = cardHTML;
           wrapper.firstElementChild.addEventListener('click', () => openPlayer(id, title, isTV));
@@ -667,57 +619,92 @@
           updateCardProgressUI(id, isTV);
         });
       } else {
-        rowsContainer.innerHTML = '';
-        initRows();
+        showHome();
       }
     });
 
-    /***** Category switcher (for sidebar & “see all”) *****/
-    window.switchCategory = function(el) {
+    /***** Category switching (now fully functional) *****/
+    window.switchCategory = async function(el) {
       const path = el.getAttribute('data-path');
       const isTV = el.getAttribute('data-tv') === '1';
       
       rowsContainer.innerHTML = `
-        <section class="space-y-4">
-          <h3 class="row-label font-semibold text-white">Loading category…</h3>
-          <div id="tempRow" class="flex gap-4 overflow-x-auto row-scroll pb-6"></div>
-        </section>`;
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="row-label font-semibold text-white">Category</h3>
+          <button onclick="showHome()" class="text-[#00f5d4] text-sm flex items-center gap-x-1">← Back to Home</button>
+        </div>
+        <div id="categoryRow" class="flex gap-4 overflow-x-auto row-scroll pb-6"></div>`;
+
+      const container = document.getElementById('categoryRow');
+      container.innerHTML = `<div class="text-white/30 py-12">Loading category...</div>`;
       
-      const container = document.getElementById('tempRow');
-      fetchJson(`${TMDB_BASE}${path}${path.includes('?')?'&':'?'}api_key=${TMDB_KEY}`)
-        .then(data => {
-          container.innerHTML = '';
-          (data?.results || []).forEach(item => {
-            // Reuse card rendering logic (simplified)
-            const id = item.id;
-            const title = item.title || item.name || '';
-            const poster = IMG_URL + 'w342' + item.poster_path;
-            const card = document.createElement('div');
-            card.className = 'card';
-            card.style.backgroundImage = `url(${poster})`;
-            card.innerHTML = `
-              <div class="play-overlay">
-                <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-2xl">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-black ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132z" /></svg>
-                </div>
-              </div>
-              <div class="card-overlay">
-                <div class="font-semibold text-base">${title}</div>
-              </div>`;
-            card.addEventListener('click', () => openPlayer(id, title, isTV));
-            container.appendChild(card);
-          });
-        });
+      const data = await fetchJson(`${TMDB_BASE}${path}${path.includes('?') ? '&' : '?'}api_key=${TMDB_KEY}`);
+      
+      container.innerHTML = '';
+      (data?.results || []).forEach(item => {
+        if (!item.poster_path) return;
+        const id = item.id;
+        const title = item.title || item.name || '';
+        const poster = IMG_URL + 'w342' + item.poster_path;
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.style.backgroundImage = `url(${poster})`;
+        card.innerHTML = `
+          <div class="play-overlay"><div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-2xl"><svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-black ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132z" /></svg></div></div>
+          <div class="card-overlay"><div class="font-semibold text-base">${title}</div></div>`;
+        card.addEventListener('click', () => openPlayer(id, title, isTV));
+        container.appendChild(card);
+      });
     };
 
-    /***** Home button *****/
-    homeBtn.addEventListener('click', () => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      if (!playerModal.classList.contains('hidden')) closePlayer();
-    });
+    /***** Continue Watching row (per profile) *****/
+    async function loadContinueWatching() {
+      rowsContainer.innerHTML = `
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="row-label font-semibold text-white">Continue Watching</h3>
+          <button onclick="showHome()" class="text-[#00f5d4] text-sm flex items-center gap-x-1">← Back</button>
+        </div>
+        <div id="continueRow" class="flex gap-4 overflow-x-auto row-scroll pb-6"></div>`;
 
-    /***** Init everything *****/
-    function initRows() {
+      const container = document.getElementById('continueRow');
+      container.innerHTML = `<div class="text-white/30 py-12">Looking for your progress...</div>`;
+
+      // Find all keys for current profile that have progress
+      const progressItems = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith(`ks_progress_${currentProfile?.id || ''}_`)) {
+          const id = parseInt(key.split('_').pop());
+          const data = loadProgress(id);
+          if (data.seconds > 60) progressItems.push({ id, seconds: data.seconds });
+        }
+      }
+
+      if (!progressItems.length) {
+        container.innerHTML = `<div class="text-white/30 py-12">Nothing watched yet — start watching something!</div>`;
+        return;
+      }
+
+      for (const item of progressItems) {
+        const info = await fetchJson(`${TMDB_BASE}/movie/${item.id}?api_key=${TMDB_KEY}`);
+        if (!info || !info.poster_path) continue;
+        
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.style.backgroundImage = `url(${IMG_URL}w342${info.poster_path})`;
+        card.innerHTML = `
+          <div class="play-overlay"><div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-2xl"><svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-black ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132z" /></svg></div></div>
+          <div class="card-overlay">
+            <div class="font-semibold">${info.title}</div>
+            <div class="progress-bar mt-3"><div class="progress-fill" style="width:35%"></div></div>
+          </div>`;
+        card.addEventListener('click', () => openPlayer(item.id, info.title, false));
+        container.appendChild(card);
+      }
+    }
+
+    /***** Show home with all rows *****/
+    function showHome() {
       rowsContainer.innerHTML = '';
       ROWS.forEach(r => {
         createRow(r);
@@ -725,20 +712,102 @@
       });
     }
 
+    /***** Auth system (demo) *****/
+    function toggleAuthModal() {
+      if (currentUser) {
+        // logout
+        currentUser = null;
+        currentProfile = null;
+        authBtn.textContent = 'Sign In';
+        profileNameEl.textContent = '';
+        profileAvatarEl.innerHTML = '';
+        showHome();
+        return;
+      }
+      document.getElementById('authModal').classList.remove('hidden');
+      switchAuthTab(0);
+    }
+    function hideAuthModal() {
+      document.getElementById('authModal').classList.add('hidden');
+    }
+    function switchAuthTab(n) {
+      const title = document.getElementById('authTitle');
+      const btn = document.getElementById('authSubmitBtn');
+      title.textContent = n === 0 ? 'Sign In' : 'Create Account';
+      btn.textContent = n === 0 ? 'Sign In' : 'Create Account';
+      document.getElementById('tabSignIn').classList.toggle('border-b-2', n===0);
+      document.getElementById('tabSignIn').classList.toggle('border-[#00f5d4]', n===0);
+      document.getElementById('tabSignUp').classList.toggle('border-b-2', n===1);
+      document.getElementById('tabSignUp').classList.toggle('border-[#00f5d4]', n===1);
+    }
+    function handleAuth() {
+      // Demo — any input works
+      const email = document.getElementById('emailInput').value || 'user@kasen.stream';
+      currentUser = { id: Date.now(), name: email.split('@')[0], email };
+      currentProfile = profiles[0]; // default to first profile
+      
+      hideAuthModal();
+      authBtn.textContent = 'Sign Out';
+      updateProfileUI();
+      showHome();
+    }
+
+    /***** Profile management (Netflix style) *****/
+    function updateProfileUI() {
+      if (!currentProfile) return;
+      profileNameEl.textContent = currentProfile.name;
+      profileAvatarEl.textContent = currentProfile.avatar;
+    }
+
+    function showProfileModal() {
+      if (!currentUser) return toggleAuthModal();
+      const container = document.getElementById('profilesList');
+      container.innerHTML = '';
+      profiles.forEach(p => {
+        const div = document.createElement('div');
+        div.className = `flex flex-col items-center cursor-pointer ${currentProfile.id === p.id ? 'ring-2 ring-[#00f5d4]' : ''}`;
+        div.innerHTML = `
+          <div class="w-20 h-20 rounded-3xl flex items-center justify-center text-5xl mb-3 shadow-inner">${p.avatar}</div>
+          <div class="text-white">${p.name}</div>`;
+        div.onclick = () => {
+          currentProfile = p;
+          hideProfileModal();
+          updateProfileUI();
+          showHome();
+        };
+        container.appendChild(div);
+      });
+      document.getElementById('profileModal').classList.remove('hidden');
+    }
+    function hideProfileModal() {
+      document.getElementById('profileModal').classList.add('hidden');
+    }
+    function addNewProfile() {
+      const name = prompt("New profile name?", "New Profile");
+      if (name) {
+        const newProfile = { id: Date.now(), name: name.trim(), avatar: "🆕" };
+        profiles.push(newProfile);
+        currentProfile = newProfile;
+        hideProfileModal();
+        updateProfileUI();
+        showHome();
+      }
+    }
+
+    /***** Init *****/
     async function initialize() {
       await loadHero();
-      initRows();
+      showHome();
       
-      // Keyboard escape
+      // Keyboard escape for player
       document.addEventListener('keydown', e => {
         if (e.key === 'Escape' && !playerModal.classList.contains('hidden')) closePlayer();
       });
       
-      // Expose for console
-      window.ks = { openPlayer, closePlayer, loadProgress };
+      // Fake logged-in state for demo (remove in production)
+      console.log('%c✅ Kasen Stream v2 ready — multi-profile + auth + extra categories active!', 'color:#00f5d4; font-size:13px');
     }
 
-    // Start the magic
     window.onload = initialize;
   </script>
 </body>
