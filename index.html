@@ -6,975 +6,344 @@
   <title>Kasenflix</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  
   <!-- Firebase -->
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-    import {
-      getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
-      signInWithPopup, GoogleAuthProvider, OAuthProvider,
-      onAuthStateChanged, signOut
-    } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-    import {
-      getFirestore, doc, setDoc, deleteDoc,
-      collection, onSnapshot, updateDoc
-    } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, OAuthProvider, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+    import { getFirestore, doc, setDoc, deleteDoc, collection, onSnapshot, updateDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
-    // ============================================================
-    // 🔧 PASTE YOUR FIREBASE CONFIG HERE
-    // ============================================================
-  const firebaseConfig = {
-  apiKey: "AIzaSyAl6PzNwWQX5accTdcUZ8N7JPQA6NVoH4o",
-  authDomain: "log-in-data-f19a9.firebaseapp.com",
-  projectId: "log-in-data-f19a9",
-  storageBucket: "log-in-data-f19a9.appspot.com",
-  messagingSenderId: "546782630442",
-  appId: "1:546782630442:web:d8c81d5d8b6512bc82e953",
-  measurementId: "G-CJCTJYBL3Q"
-};
-    // ============================================================
+    const firebaseConfig = {
+      apiKey: "AIzaSyAl6PzNwWQX5accTdcUZ8N7JPQA6NVoH4o",
+      authDomain: "log-in-data-f19a9.firebaseapp.com",
+      projectId: "log-in-data-f19a9",
+      storageBucket: "log-in-data-f19a9.appspot.com",
+      messagingSenderId: "546782630442",
+      appId: "1:546782630442:web:d8c81d5d8b6512bc82e953"
+    };
 
-    const KASENFLIX_APP_ID = 'kasenflix-pro';
     const firebaseApp = initializeApp(firebaseConfig);
     const auth = getAuth(firebaseApp);
     const db = getFirestore(firebaseApp);
 
-    // Expose to window so React app can use
     window._kfAuth = auth;
     window._kfDb = db;
-    window._kfAppId = KASENFLIX_APP_ID;
-    window._kfFirebase = {
-      signInWithEmailAndPassword, createUserWithEmailAndPassword,
-      signInWithPopup, GoogleAuthProvider, OAuthProvider,
-      onAuthStateChanged, signOut,
-      doc, setDoc, deleteDoc, collection, onSnapshot, updateDoc
-    };
+    window._kfAppId = 'kasenflix-pro';
+    window._kfFirebase = { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, OAuthProvider, onAuthStateChanged, signOut, doc, setDoc, deleteDoc, collection, onSnapshot, updateDoc };
     window._kfReady = true;
     document.dispatchEvent(new Event('firebase-ready'));
   </script>
+
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
-    body { background: #000; color: #fff; font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
-    #root { min-height: 100vh; }
-    ::selection { background: #e50914; color: #fff; }
-
-    /* Utility classes */
-    .flex { display: flex; }
-    .flex-col { flex-direction: column; }
-    .flex-1 { flex: 1; }
-    .flex-wrap { flex-wrap: wrap; }
-    .items-center { align-items: center; }
-    .items-start { align-items: flex-start; }
-    .justify-center { justify-content: center; }
-    .justify-between { justify-content: space-between; }
-    .justify-end { justify-content: flex-end; }
-    .gap-1 { gap: 4px; }
-    .gap-2 { gap: 8px; }
-    .gap-3 { gap: 12px; }
-    .gap-4 { gap: 16px; }
-    .gap-5 { gap: 20px; }
-    .gap-6 { gap: 24px; }
-    .gap-8 { gap: 32px; }
-    .w-full { width: 100%; }
-    .h-full { height: 100%; }
-    .min-h-screen { min-height: 100vh; }
-    .relative { position: relative; }
-    .absolute { position: absolute; }
-    .fixed { position: fixed; }
-    .inset-0 { top:0;right:0;bottom:0;left:0; }
-    .z-10 { z-index: 10; }
-    .z-50 { z-index: 50; }
-    .z-100 { z-index: 100; }
-    .overflow-hidden { overflow: hidden; }
-    .overflow-x-auto { overflow-x: auto; }
-    .cursor-pointer { cursor: pointer; }
-    .cursor-not-allowed { cursor: not-allowed; }
-    .shrink-0 { flex-shrink: 0; }
-    .text-center { text-align: center; }
-    .text-left { text-align: left; }
-    .text-right { text-align: right; }
-    .font-bold { font-weight: 700; }
-    .font-black { font-weight: 900; }
-    .font-medium { font-weight: 500; }
-    .font-semibold { font-weight: 600; }
-    .italic { font-style: italic; }
-    .uppercase { text-transform: uppercase; }
-    .capitalize { text-transform: capitalize; }
-    .tracking-tighter { letter-spacing: -0.05em; }
-    .tracking-widest { letter-spacing: 0.1em; }
-    .leading-none { line-height: 1; }
-    .rounded { border-radius: 4px; }
-    .rounded-md { border-radius: 6px; }
-    .rounded-lg { border-radius: 8px; }
-    .rounded-xl { border-radius: 12px; }
-    .rounded-2xl { border-radius: 16px; }
-    .rounded-full { border-radius: 9999px; }
-    .border { border: 1px solid; }
-    .border-2 { border-width: 2px; }
-    .border-dashed { border-style: dashed; }
-    .border-t-2 { border-top-width: 2px; }
-    .border-transparent { border-color: transparent; }
-    .outline-none { outline: none; }
-    .transition-all { transition: all 0.2s ease; }
-    .transition-colors { transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease; }
-    .transition-opacity { transition: opacity 0.2s ease; }
-    .transition-transform { transition: transform 0.2s ease; }
-    .opacity-0 { opacity: 0; }
-    .opacity-5 { opacity: 0.05; }
-    .opacity-80 { opacity: 0.8; }
-    .object-cover { object-fit: cover; }
-    .block { display: block; }
-    .inline { display: inline; }
-    .hidden { display: none; }
-    .grid { display: grid; }
-    .backdrop-blur { backdrop-filter: blur(8px); }
-    .pointer-events-none { pointer-events: none; }
-    .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-    .line-clamp-4 { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
-    .space-y-3 > * + * { margin-top: 12px; }
-    .space-y-4 > * + * { margin-top: 16px; }
-    .space-y-6 > * + * { margin-top: 24px; }
-    .space-y-8 > * + * { margin-top: 32px; }
-    .space-y-12 > * + * { margin-top: 48px; }
-    .mx-auto { margin-left: auto; margin-right: auto; }
-    .mt-2 { margin-top: 8px; }
-    .mt-4 { margin-top: 16px; }
-    .mt-6 { margin-top: 24px; }
-    .mt-8 { margin-top: 32px; }
-    .mt-16 { margin-top: 64px; }
-    .mb-2 { margin-bottom: 8px; }
-    .mb-3 { margin-bottom: 12px; }
-    .mb-4 { margin-bottom: 16px; }
-    .mb-6 { margin-bottom: 24px; }
-    .mb-8 { margin-bottom: 32px; }
-    .mb-10 { margin-bottom: 40px; }
-    .p-3 { padding: 12px; }
-    .p-4 { padding: 16px; }
-    .p-6 { padding: 24px; }
-    .p-8 { padding: 32px; }
-    .px-1 { padding-left: 4px; padding-right: 4px; }
-    .px-2 { padding-left: 8px; padding-right: 8px; }
-    .px-3 { padding-left: 12px; padding-right: 12px; }
-    .px-4 { padding-left: 16px; padding-right: 16px; }
-    .px-6 { padding-left: 24px; padding-right: 24px; }
-    .px-8 { padding-left: 32px; padding-right: 32px; }
-    .py-1 { padding-top: 4px; padding-bottom: 4px; }
-    .py-2 { padding-top: 8px; padding-bottom: 8px; }
-    .py-3 { padding-top: 12px; padding-bottom: 12px; }
-    .py-4 { padding-top: 16px; padding-bottom: 16px; }
-    .py-6 { padding-top: 24px; padding-bottom: 24px; }
-    .py-12 { padding-top: 48px; padding-bottom: 48px; }
-    .py-20 { padding-top: 80px; padding-bottom: 80px; }
-    .pt-2 { padding-top: 8px; }
-    .pt-4 { padding-top: 16px; }
-    .pt-24 { padding-top: 96px; }
-    .pb-2 { padding-bottom: 8px; }
-    .pb-20 { padding-bottom: 80px; }
-    .pr-16 { padding-right: 64px; }
-    .w-3 { width: 12px; }
-    .w-4 { width: 16px; }
-    .w-5 { width: 20px; }
-    .w-6 { width: 24px; }
-    .w-8 { width: 32px; }
-    .w-10 { width: 40px; }
-    .w-12 { width: 48px; }
-    .w-14 { width: 56px; }
-    .w-16 { width: 64px; }
-    .w-24 { width: 96px; }
-    .w-80 { width: 320px; }
-    .h-1 { height: 4px; }
-    .h-3 { height: 12px; }
-    .h-4 { height: 16px; }
-    .h-5 { height: 20px; }
-    .h-6 { height: 24px; }
-    .h-8 { height: 32px; }
-    .h-10 { height: 40px; }
-    .h-12 { height: 48px; }
-    .h-14 { height: 56px; }
-    .h-16 { height: 64px; }
-    .h-24 { height: 96px; }
-    .h-48 { height: 192px; }
-    .max-w-md { max-width: 448px; }
-    .max-w-sm { max-width: 384px; }
-    .max-w-xl { max-width: 576px; }
-    .max-w-2xl { max-width: 672px; }
-    .max-w-4xl { max-width: 896px; }
-    .text-xs { font-size: 10px; }
-    .text-sm { font-size: 14px; }
-    .text-lg { font-size: 18px; }
-    .text-xl { font-size: 20px; }
-    .text-2xl { font-size: 24px; }
-    .text-3xl { font-size: 30px; }
-    .text-4xl { font-size: 36px; }
-    .text-5xl { font-size: 48px; }
-    .text-7xl { font-size: 72px; }
-    /* Colors */
-    .text-white { color: #fff; }
-    .text-black { color: #000; }
-    .text-red-600 { color: #dc2626; }
-    .text-red-400 { color: #f87171; }
-    .text-red-300 { color: #fca5a5; }
-    .text-gray-200 { color: #e5e7eb; }
-    .text-gray-300 { color: #d1d5db; }
-    .text-gray-400 { color: #9ca3af; }
-    .text-gray-500 { color: #6b7280; }
-    .text-gray-600 { color: #4b5563; }
-    .text-green-400 { color: #4ade80; }
-    .text-green-500 { color: #22c55e; }
-    .text-yellow-400 { color: #facc15; }
-    .text-blue-400 { color: #60a5fa; }
-    .bg-black { background-color: #000; }
-    .bg-white { background-color: #fff; }
-    .bg-red-600 { background-color: #dc2626; }
-    .bg-red-700 { background-color: #b91c1c; }
-    .bg-red-900 { background-color: #7f1d1d; }
-    .bg-green-600 { background-color: #16a34a; }
-    .bg-green-700 { background-color: #15803d; }
-    .bg-zinc-700 { background-color: #3f3f46; }
-    .bg-zinc-800 { background-color: #27272a; }
-    .bg-zinc-900 { background-color: #18181b; }
-    .bg-zinc-950 { background-color: #09090b; }
-    .border-zinc-600 { border-color: #52525b; }
-    .border-zinc-700 { border-color: #3f3f46; }
-    .border-red-600 { border-color: #dc2626; }
-    .border-gray-400 { border-color: #9ca3af; }
-    .border-gray-600 { border-color: #4b5563; }
-    .border-gray-700 { border-color: #374151; }
-    .border-white { border-color: #fff; }
-    .fill-current { fill: currentColor; }
-    .fill-green-400 { fill: #4ade80; }
-    .fill-yellow-400 { fill: #facc15; }
-    .fill-white { fill: #fff; }
-
-    /* Hover states */
-    button { background: none; border: none; color: inherit; cursor: pointer; font-family: inherit; }
-    button:hover .hover-scale { transform: scale(1.05); }
-    input { font-family: inherit; }
-
-    /* Animations */
-    @keyframes spin { to { transform: rotate(360deg); } }
-    @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.5; } }
-    @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
-    @keyframes slideUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
-    .animate-spin { animation: spin 1s linear infinite; }
-    .animate-pulse { animation: pulse 2s ease-in-out infinite; }
-    .animate-fade-in { animation: fadeIn 0.7s ease forwards; }
-    .animate-slide-up { animation: slideUp 0.5s ease forwards; }
-
-    /* Grid layouts */
-    .grid-cols-2 { grid-template-columns: repeat(2,1fr); }
-    @media (min-width:640px) { .sm-grid-cols-3 { grid-template-columns: repeat(3,1fr); } }
-    @media (min-width:768px) {
-      .md-grid-cols-5 { grid-template-columns: repeat(5,1fr); }
-      .md-flex-row { flex-direction: row; }
-      .md-w-1-3 { width: 33.333%; }
-      .md-h-auto { height: auto; }
-      .md-left-12 { left: 48px; }
-      .md-text-3xl { font-size: 30px; }
-      .md-text-5xl { font-size: 48px; }
-      .md-text-7xl { font-size: 72px; }
-      .md-px-12 { padding-left: 48px; padding-right: 48px; }
-      .md-hidden-show { display: flex; }
-      .md-inline { display: inline; }
-      .md-hidden { display: none; }
+    :root {
+      --primary: #00f5ff;
+      --accent: #ff00aa;
     }
-    @media (min-width:1024px) { .lg-grid-cols-6 { grid-template-columns: repeat(6,1fr); } }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { background:#0a0a0a; color:#fff; font-family:'Segoe UI', system-ui, sans-serif; overflow-x:hidden; }
+    h1, h2, h3 { font-weight:900; letter-spacing:-0.04em; }
 
-    /* Movie card */
-    .movie-card { position: relative; aspect-ratio: 2/3; border-radius: 6px; overflow: hidden; cursor: pointer; transition: transform 0.2s; }
-    .movie-card:hover { transform: scale(1.05); z-index: 20; }
-    .movie-card .overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.65); opacity: 0; transition: opacity 0.2s; display: flex; flex-direction: column; justify-content: flex-end; padding: 12px; }
-    .movie-card:hover .overlay { opacity: 1; }
-    .movie-card img { width: 100%; height: 100%; object-fit: cover; }
+    /* Navbar */
+    .navbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: linear-gradient(to bottom, rgba(10,10,10,0.95), transparent);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      backdrop-filter: blur(12px);
+    }
+    .logo { font-size: 28px; font-weight: 900; background: linear-gradient(90deg, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; cursor:pointer; }
 
-    /* Nav */
-    .navbar { position: fixed; top:0; left:0; right:0; z-index:50; background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent); backdrop-filter: blur(4px); padding: 16px 24px; display:flex; align-items:center; justify-content:space-between; }
+    .nav-links button {
+      background:none; border:none; color:#ccc; font-size:15px; padding:8px 20px; border-radius:9999px; transition:all 0.3s;
+    }
+    .nav-links button.active, .nav-links button:hover {
+      background:rgba(0,245,255,0.15); color:var(--primary);
+    }
 
     /* Hero */
-    .hero { position:relative; height:80vh; width:100%; }
-    .hero img.bg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
-    .hero .grad1 { position:absolute; inset:0; background:linear-gradient(to top,#000 0%,rgba(0,0,0,.4) 60%,transparent 100%); }
-    .hero .grad2 { position:absolute; inset:0; background:linear-gradient(to right,#000 0%,rgba(0,0,0,.2) 60%,transparent 100%); }
-    .hero-content { position:absolute; bottom:80px; left:24px; max-width:576px; }
+    .hero {
+      height: 85vh;
+      position: relative;
+      display: flex;
+      align-items: flex-end;
+      padding: 0 24px 80px;
+    }
+    .hero-bg { position:absolute; inset:0; object-fit:cover; filter:brightness(0.65); }
+    .hero-content { max-width: 600px; z-index: 2; }
 
-    /* Profile hover */
-    .profile-btn { display:flex; flex-direction:column; align-items:center; gap:12px; transition:transform 0.2s; background:none; border:none; cursor:pointer; }
-    .profile-btn:hover { transform:scale(1.05); }
-    .profile-btn .avatar-wrap { width:96px; height:96px; border-radius:6px; overflow:hidden; border: 3px solid transparent; transition:border-color 0.2s; }
-    .profile-btn:hover .avatar-wrap { border-color: rgba(255,255,255,0.4); }
-    .profile-btn span { color:#9ca3af; font-size:18px; transition:color 0.2s; }
-    .profile-btn:hover span { color:#fff; }
-    @media(min-width:768px) {
-      .profile-btn .avatar-wrap { width:144px; height:144px; }
-      .profile-btn span { font-size:20px; }
+    /* Content Rows */
+    .row {
+      padding: 20px 24px;
+      margin-top: -60px;
+      position: relative;
+      z-index: 10;
+    }
+    .row-title {
+      font-size: 22px;
+      margin-bottom: 12px;
+      padding-left: 8px;
+    }
+    .scroll-row {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding: 8px 0;
+      scrollbar-width: none;
+    }
+    .scroll-row::-webkit-scrollbar { display:none; }
+    .card {
+      min-width: 180px;
+      aspect-ratio: 2/3;
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.4,0,0.2,1);
+      position: relative;
+    }
+    .card:hover {
+      transform: scale(1.08) translateY(-8px);
+      box-shadow: 0 20px 40px rgba(0,245,255,0.3);
+    }
+    .card img { width:100%; height:100%; object-fit:cover; }
+
+    /* Player */
+    .player-modal {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .player-content {
+      width: 95%;
+      max-width: 1100px;
+      background: #111;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .close-player {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      border: none;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      font-size: 24px;
+      cursor: pointer;
+      z-index: 10;
     }
 
-    /* Ring on avatar */
-    .ring-hover { border: 3px solid transparent; }
-    .profile-btn:hover .ring-hover { border-color: rgba(255,255,255,0.3); }
-
-    /* Scrollbar hide for avatar row */
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-    /* Auth card */
-    .auth-card { background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); border-radius: 16px; padding: 32px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 25px 50px rgba(0,0,0,0.8); }
-    .auth-input { width:100%; background:#27272a; border:1px solid #3f3f46; border-radius:8px; padding:12px 16px; color:#fff; font-size:16px; outline:none; transition:border-color 0.2s; }
-    .auth-input:focus { border-color:#dc2626; }
-    .auth-btn-primary { width:100%; background:#dc2626; color:#fff; font-weight:700; padding:12px; border-radius:8px; font-size:16px; transition:background 0.2s; }
-    .auth-btn-primary:hover { background:#b91c1c; }
-    .auth-btn-social { display:flex; align-items:center; justify-content:center; gap:8px; background:#27272a; border:1px solid #3f3f46; border-radius:8px; padding:12px; color:#fff; font-size:14px; font-weight:500; transition:background 0.2s; width:100%; }
-    .auth-btn-social:hover { background:#3f3f46; }
-    .divider { display:flex; align-items:center; gap:12px; margin: 24px 0; }
-    .divider-line { flex:1; height:1px; background:#3f3f46; }
-    .divider-text { color:#6b7280; font-size:11px; text-transform:uppercase; letter-spacing:0.05em; }
-
-    /* Manage profiles */
-    .profile-row { display:flex; align-items:center; gap:16px; background:#18181b; border-radius:12px; padding:16px; border:1px solid rgba(255,255,255,0.05); }
-    .manage-edit-input { background:#27272a; border:1px solid #52525b; border-radius:4px; padding:4px 12px; color:#fff; width:100%; outline:none; transition:border-color 0.2s; }
-    .manage-edit-input:focus { border-color:#dc2626; }
-    .icon-btn { padding:8px; border-radius:8px; transition:background 0.2s; }
-    .icon-btn:hover { background:#3f3f46; }
-    .icon-btn-danger:hover { background:#7f1d1d; color:#f87171; }
-    .icon-btn-success { background:#15803d; }
-    .icon-btn-success:hover { background:#16a34a; }
-
-    /* Finder card */
-    .finder-card { background:#18181b; border-radius:16px; overflow:hidden; box-shadow: 0 25px 50px rgba(0,0,0,.8); border:1px solid rgba(255,255,255,0.05); margin-top:32px; }
-
-    /* Progress bar */
-    .progress-bar { height:4px; background:#3f3f46; }
-    .progress-fill { height:100%; background:#dc2626; width:33%; }
-
-    /* Spinner */
-    .spinner { width:40px; height:40px; border-radius:50%; border:2px solid transparent; border-top-color:#dc2626; animation: spin 1s linear infinite; }
+    /* Finder */
+    .finder {
+      padding: 120px 24px 80px;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
-  <div id="root">
-    <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#000;">
-      <div class="spinner"></div>
-    </div>
-  </div>
+
+<div id="root"></div>
 
 <script>
-// ============================================================
-// ICONS (inline SVG strings)
-// ============================================================
-const Icons = {
-  play: `<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>`,
-  info: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="8"/><line x1="12" y1="12" x2="12" y2="16"/></svg>`,
-  plus: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
-  sparkles: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3L13.5 8.5L19 10L13.5 11.5L12 17L10.5 11.5L5 10L10.5 8.5Z"/><path d="M5 3L5.8 5.2L8 6L5.8 6.8L5 9L4.2 6.8L2 6L4.2 5.2Z"/><path d="M19 13L19.8 15.2L22 16L19.8 16.8L19 19L18.2 16.8L16 16L18.2 15.2Z"/></svg>`,
-  search: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
-  logout: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>`,
-  trash: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>`,
-  edit: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`,
-  check: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>`,
-  star: `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
-  chevLeft: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>`,
-  film: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="17" y1="7" x2="22" y2="7"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="2" y1="17" x2="7" y2="17"/></svg>`,
-  tv: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></svg>`,
-  google: `<svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>`,
-  apple: `<svg width="16" height="18" viewBox="0 0 814 1000" fill="white"><path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-37.5-155.5-127.4C46.7 790.7 0 663 0 541.8c0-207.5 135.4-317.5 268.5-317.5 99.8 0 167.8 45.2 224.1 45.2 53.3 0 132.1-48.8 244-48.8zm-97.4-174.2c0-85.3-56.8-148.7-85.3-180.5-23.8-26.6-71.2-64.6-133.4-64.6-3.8 0-5.1 0-8.9.6 2 72.2 33.3 141.1 68 192.8 38.6 55.4 86.6 91.5 159.6 106.1z"/></svg>`
-};
-
-// ============================================================
-// TMDB CONFIG
-// ============================================================
+// ================== CONFIG ==================
 const TMDB_KEY = '70c6183515ac89cbab2dbdea3a6c6124';
-const TMDB_BASE = 'https://api.themoviedb.org/3';
 const IMG_BASE = 'https://image.tmdb.org/t/p/w500';
 const BACKDROP_BASE = 'https://image.tmdb.org/t/p/original';
 
-const AVATAR_TEMPLATES = [
-  "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix",
-  "https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka",
-  "https://api.dicebear.com/7.x/avataaars/svg?seed=Buddy",
-  "https://api.dicebear.com/7.x/avataaars/svg?seed=Max",
-  "https://api.dicebear.com/7.x/avataaars/svg?seed=Luna",
-  "https://api.dicebear.com/7.x/avataaars/svg?seed=Zara",
-];
-
-// ============================================================
-// APP STATE
-// ============================================================
 let state = {
   user: null,
   profiles: [],
   activeProfile: null,
-  view: 'loading',   // loading | auth | profile-picker | manage-profiles | create-profile | home | finder
-  authMode: 'signin',
-  authError: '',
+  view: 'loading',
+  currentTab: 'home',
   content: { trending: [], movies: [], tv: [] },
   hero: null,
-  foundMovie: null,
-  tmdbLoading: false,
-  editingProfileId: null,
-  newProfileName: '',
-  newProfileAvatar: AVATAR_TEMPLATES[0],
-  createName: '',
-  createAvatar: AVATAR_TEMPLATES[0],
-  unsubProfiles: null
+  selectedItem: null,
+  playerUrl: null,
+  finderType: 'movie',
+  finderGenre: '',
 };
 
-function setState(patch) {
-  Object.assign(state, patch);
+// ================== HELPERS ==================
+function getPoster(item) { return item?.poster_path ? `${IMG_BASE}${item.poster_path}` : ''; }
+function getBackdrop(item) { return item?.backdrop_path ? `${BACKDROP_BASE}${item.backdrop_path}` : ''; }
+function getTitle(item) { return item?.title || item?.name || 'Untitled'; }
+
+// ================== TMDB ==================
+async function fetchContent() {
+  if (state.content.trending.length) return;
+  const [tr, mr, tv] = await Promise.all([
+    fetch(`https://api.themoviedb.org/3/trending/all/week?api_key=${TMDB_KEY}`),
+    fetch(`https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_KEY}`),
+    fetch(`https://api.themoviedb.org/3/tv/popular?api_key=${TMDB_KEY}`)
+  ]);
+  const [tData, mData, tvData] = await Promise.all([tr.json(), mr.json(), tv.json()]);
+  
+  state.content = {
+    trending: tData.results,
+    movies: mData.results,
+    tv: tvData.results
+  };
+  state.hero = tData.results[0];
   render();
 }
 
-// ============================================================
-// HELPERS
-// ============================================================
-function getTitle(item) { return item?.title || item?.name || 'Untitled'; }
-function getPoster(item) { return item?.poster_path ? `${IMG_BASE}${item.poster_path}` : null; }
-function getBackdrop(item) { return item?.backdrop_path ? `${BACKDROP_BASE}${item.backdrop_path}` : null; }
-
-// ============================================================
-// FIREBASE ACTIONS
-// ============================================================
-function waitForFirebase(cb) {
-  if (window._kfReady) cb();
-  else document.addEventListener('firebase-ready', cb, { once: true });
-}
-
-function initFirebase() {
-  waitForFirebase(() => {
-    const { onAuthStateChanged } = window._kfFirebase;
-    const auth = window._kfAuth;
-    onAuthStateChanged(auth, (u) => {
-      if (!u) {
-        if (state.unsubProfiles) { state.unsubProfiles(); state.unsubProfiles = null; }
-        setState({ user: null, profiles: [], activeProfile: null, view: 'auth' });
-      } else {
-        setState({ user: u });
-        subscribeProfiles(u.uid);
-        if (state.view === 'loading' || state.view === 'auth') setState({ view: 'profile-picker' });
-      }
+// ================== PLAYER ==================
+function playItem(item) {
+  state.selectedItem = item;
+  const title = getTitle(item);
+  
+  // Try to get trailer
+  fetch(`https://api.themoviedb.org/3/${item.media_type || (item.title ? 'movie' : 'tv')}/${item.id}/videos?api_key=${TMDB_KEY}`)
+    .then(r => r.json())
+    .then(data => {
+      const trailer = data.results.find(v => v.type === 'Trailer' && v.site === 'YouTube');
+      state.playerUrl = trailer ? `https://www.youtube.com/embed/${trailer.key}?autoplay=1` : 
+        `https://www.youtube.com/results?search_query=${encodeURIComponent(title + ' trailer')}`;
+      
+      render();
+      document.getElementById('player-modal').style.display = 'flex';
     });
-  });
 }
 
-function subscribeProfiles(uid) {
-  if (state.unsubProfiles) state.unsubProfiles();
-  waitForFirebase(() => {
-    const { collection, onSnapshot } = window._kfFirebase;
-    const db = window._kfDb;
-    const appId = window._kfAppId;
-    const ref = collection(db, 'artifacts', appId, 'users', uid, 'profiles');
-    const unsub = onSnapshot(ref, (snap) => {
-      const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      setState({ profiles: list });
-    });
-    state.unsubProfiles = unsub;
-  });
+function closePlayer() {
+  document.getElementById('player-modal').style.display = 'none';
+  state.playerUrl = null;
 }
 
-async function handleSignIn() {
-  const email = document.getElementById('auth-email')?.value || '';
-  const password = document.getElementById('auth-password')?.value || '';
-  setState({ authError: '' });
-  try {
-    const { signInWithEmailAndPassword } = window._kfFirebase;
-    await signInWithEmailAndPassword(window._kfAuth, email, password);
-    setState({ view: 'profile-picker' });
-  } catch(e) {
-    setState({ authError: e.message.replace('Firebase: ','').replace(/\(auth.*\)\.?/,'') });
+// ================== FINDER ==================
+function findSomething() {
+  let pool = state.finderType === 'movie' ? state.content.movies : state.content.tv;
+  if (state.finderGenre) {
+    pool = pool.filter(item => item.genre_ids && item.genre_ids.includes(parseInt(state.finderGenre)));
   }
+  if (!pool.length) return alert("No results in that category yet.");
+  
+  const random = pool[Math.floor(Math.random() * pool.length)];
+  playItem(random);
 }
 
-async function handleSignUp() {
-  const email = document.getElementById('auth-email')?.value || '';
-  const password = document.getElementById('auth-password')?.value || '';
-  setState({ authError: '' });
-  try {
-    const { createUserWithEmailAndPassword } = window._kfFirebase;
-    await createUserWithEmailAndPassword(window._kfAuth, email, password);
-    setState({ view: 'profile-picker' });
-  } catch(e) {
-    setState({ authError: e.message.replace('Firebase: ','').replace(/\(auth.*\)\.?/,'') });
-  }
-}
-
-async function handleGoogleSignIn() {
-  setState({ authError: '' });
-  try {
-    const { signInWithPopup, GoogleAuthProvider } = window._kfFirebase;
-    await signInWithPopup(window._kfAuth, new GoogleAuthProvider());
-    setState({ view: 'profile-picker' });
-  } catch(e) { setState({ authError: 'Google sign-in failed. Try again.' }); }
-}
-
-async function handleAppleSignIn() {
-  setState({ authError: '' });
-  try {
-    const { signInWithPopup, OAuthProvider } = window._kfFirebase;
-    const provider = new OAuthProvider('apple.com');
-    await signInWithPopup(window._kfAuth, provider);
-    setState({ view: 'profile-picker' });
-  } catch(e) { setState({ authError: 'Apple sign-in failed. Try again.' }); }
-}
-
-async function handleSignOut() {
-  const { signOut } = window._kfFirebase;
-  await signOut(window._kfAuth);
-  setState({ user: null, activeProfile: null, view: 'auth' });
-}
-
-async function createProfile() {
-  const name = state.createName.trim();
-  if (!name || !state.user) return;
-  const { doc, setDoc } = window._kfFirebase;
-  const db = window._kfDb;
-  const appId = window._kfAppId;
-  const profileId = crypto.randomUUID();
-  await setDoc(doc(db, 'artifacts', appId, 'users', state.user.uid, 'profiles', profileId), {
-    name, avatar: state.createAvatar, myList: [], continueWatching: [], createdAt: Date.now()
-  });
-  setState({ view: 'profile-picker', createName: '', createAvatar: AVATAR_TEMPLATES[0] });
-}
-
-async function deleteProfile(profileId) {
-  if (!state.user) return;
-  const { doc, deleteDoc } = window._kfFirebase;
-  const db = window._kfDb;
-  const appId = window._kfAppId;
-  await deleteDoc(doc(db, 'artifacts', appId, 'users', state.user.uid, 'profiles', profileId));
-}
-
-async function renameProfile(profileId) {
-  const name = state.newProfileName.trim();
-  if (!name || !state.user) return;
-  const { doc, updateDoc } = window._kfFirebase;
-  const db = window._kfDb;
-  const appId = window._kfAppId;
-  await updateDoc(doc(db, 'artifacts', appId, 'users', state.user.uid, 'profiles', profileId), { name });
-  setState({ editingProfileId: null, newProfileName: '' });
-}
-
-async function fetchTMDB() {
-  if (state.content.trending.length > 0) return;
-  setState({ tmdbLoading: true });
-  try {
-    const [tR, mR, tvR] = await Promise.all([
-      fetch(`${TMDB_BASE}/trending/all/week?api_key=${TMDB_KEY}`),
-      fetch(`${TMDB_BASE}/movie/popular?api_key=${TMDB_KEY}`),
-      fetch(`${TMDB_BASE}/tv/popular?api_key=${TMDB_KEY}`)
-    ]);
-    const [tD, mD, tvD] = await Promise.all([tR.json(), mR.json(), tvR.json()]);
-    setState({ hero: tD.results[0], content: { trending: tD.results, movies: mD.results, tv: tvD.results }, tmdbLoading: false });
-  } catch(e) { setState({ tmdbLoading: false }); }
-}
-
-function handleFindMovie() {
-  const pool = [...state.content.trending, ...state.content.movies];
-  if (!pool.length) return;
-  setState({ foundMovie: pool[Math.floor(Math.random() * pool.length)] });
-}
-
-// ============================================================
-// VIEWS
-// ============================================================
-function renderLoading() {
-  return `<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#000;"><div class="spinner"></div></div>`;
-}
-
-function renderAuth() {
-  const isSignIn = state.authMode === 'signin';
-  return `
-  <div style="min-height:100vh;background:#000;display:flex;flex-direction:column;">
-    <div style="padding:24px 32px;"><h1 style="color:#dc2626;font-weight:900;font-size:28px;letter-spacing:-0.05em;">KASENFLIX</h1></div>
-    <div style="position:absolute;inset:0;background:linear-gradient(135deg,#18181b,#000,#09090b);z-index:0;"></div>
-    <div style="position:absolute;inset:0;opacity:0.06;background:radial-gradient(circle at 20% 50%,#e50914,transparent 50%),radial-gradient(circle at 80% 20%,#831010,transparent 40%);z-index:0;"></div>
-    <div style="position:relative;z-index:1;flex:1;display:flex;align-items:center;justify-content:center;padding:16px;">
-      <div style="width:100%;max-width:420px;">
-        <div class="auth-card animate-slide-up">
-          <h2 style="font-size:28px;font-weight:700;color:#fff;margin-bottom:8px;">${isSignIn ? 'Sign In' : 'Create Account'}</h2>
-          <p style="color:#9ca3af;font-size:14px;margin-bottom:28px;">${isSignIn ? 'Welcome back to Kasenflix' : 'Start watching today'}</p>
-          ${state.authError ? `<div style="margin-bottom:16px;padding:12px;background:rgba(127,29,29,0.4);border:1px solid rgba(220,38,38,0.4);border-radius:8px;color:#fca5a5;font-size:14px;">${state.authError}</div>` : ''}
-          <div class="space-y-4">
-            <input id="auth-email" class="auth-input" type="email" placeholder="Email address" autocomplete="email" />
-            <div style="position:relative;">
-              <input id="auth-password" class="auth-input" type="password" placeholder="Password" autocomplete="${isSignIn ? 'current-password' : 'new-password'}" style="padding-right:64px;"
-                onkeydown="if(event.key==='Enter'){${isSignIn ? 'handleSignIn()' : 'handleSignUp()'}}" />
-              <button onclick="togglePasswordVis()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);color:#6b7280;font-size:11px;font-weight:600;" id="show-pass-btn">SHOW</button>
-            </div>
-            <button class="auth-btn-primary" onclick="${isSignIn ? 'handleSignIn()' : 'handleSignUp()'}">${isSignIn ? 'Sign In' : 'Sign Up'}</button>
-          </div>
-          <div class="divider"><div class="divider-line"></div><span class="divider-text">or continue with</span><div class="divider-line"></div></div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-            <button class="auth-btn-social" onclick="handleGoogleSignIn()">${Icons.google} Google</button>
-            <button class="auth-btn-social" onclick="handleAppleSignIn()">${Icons.apple} Apple</button>
-          </div>
-          <p style="text-align:center;font-size:14px;color:#6b7280;margin-top:24px;">
-            ${isSignIn ? "Don't have an account?" : "Already have an account?"}
-            <button onclick="setState({authMode:'${isSignIn ? 'signup' : 'signin'}',authError:''})" style="color:#fff;font-weight:600;margin-left:4px;text-decoration:underline;">${isSignIn ? 'Sign Up' : 'Sign In'}</button>
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>`;
-}
-
-function togglePasswordVis() {
-  const inp = document.getElementById('auth-password');
-  const btn = document.getElementById('show-pass-btn');
-  if (!inp) return;
-  inp.type = inp.type === 'password' ? 'text' : 'password';
-  btn.textContent = inp.type === 'password' ? 'SHOW' : 'HIDE';
-}
-window.togglePasswordVis = togglePasswordVis;
-
-function renderProfilePicker() {
-  const cards = state.profiles.map(p => `
-    <button class="profile-btn" onclick="setState({activeProfile:${JSON.stringify(p).replace(/"/g,"'")},view:'home'})">
-      <div class="avatar-wrap ring-hover"><img src="${p.avatar}" style="width:100%;height:100%;object-fit:cover;" /></div>
-      <span>${p.name}</span>
-    </button>`).join('');
-  return `
-  <div style="min-height:100vh;background:#0a0a0a;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;" class="animate-fade-in">
-    <h1 style="font-size:clamp(28px,5vw,48px);font-weight:500;color:#fff;margin-bottom:40px;">Who's watching?</h1>
-    <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:24px;max-width:896px;">
-      ${cards}
-      <button class="profile-btn" onclick="setState({view:'create-profile',createName:'',createAvatar:'${AVATAR_TEMPLATES[0]}'})">
-        <div class="avatar-wrap" style="background:#1a1a1a;display:flex;align-items:center;justify-content:center;border:none;">
-          <span style="font-size:48px;color:#6b7280;line-height:1;">${Icons.plus.replace('width="20" height="20"','width="48" height="48"')}</span>
-        </div>
-        <span>Add Profile</span>
-      </button>
-    </div>
-    <div style="display:flex;gap:16px;margin-top:64px;">
-      <button onclick="setState({view:'manage-profiles'})"
-        style="padding:8px 24px;border:1px solid #4b5563;color:#6b7280;font-size:12px;letter-spacing:0.1em;text-transform:uppercase;transition:all 0.2s;"
-        onmouseover="this.style.color='#fff';this.style.borderColor='#fff';"
-        onmouseout="this.style.color='#6b7280';this.style.borderColor='#4b5563';">Manage Profiles</button>
-      <button onclick="handleSignOut()"
-        style="padding:8px 24px;border:1px solid #374151;color:#4b5563;font-size:12px;letter-spacing:0.1em;text-transform:uppercase;display:flex;align-items:center;gap:8px;transition:all 0.2s;"
-        onmouseover="this.style.color='#f87171';this.style.borderColor='#dc2626';"
-        onmouseout="this.style.color='#4b5563';this.style.borderColor='#374151';">${Icons.logout} Sign Out</button>
-    </div>
-  </div>`;
-}
-
-function renderManageProfiles() {
-  const rows = state.profiles.map(p => {
-    const isEditing = state.editingProfileId === p.id;
-    return `
-    <div class="profile-row">
-      <img src="${p.avatar}" style="width:56px;height:56px;border-radius:8px;" />
-      <div style="flex:1;">
-        ${isEditing
-          ? `<input class="manage-edit-input" id="edit-input-${p.id}" value="${p.name}"
-              oninput="state.newProfileName=this.value"
-              onkeydown="if(event.key==='Enter')renameProfile('${p.id}')" />`
-          : `<p style="font-weight:600;font-size:18px;">${p.name}</p>`}
-      </div>
-      <div style="display:flex;gap:8px;">
-        ${isEditing
-          ? `<button class="icon-btn icon-btn-success" onclick="renameProfile('${p.id}')">${Icons.check}</button>`
-          : `<button class="icon-btn" onclick="setState({editingProfileId:'${p.id}',newProfileName:'${p.name}'})" onmouseover="this.style.background='#3f3f46'" onmouseout="this.style.background='none'">${Icons.edit}</button>`}
-        <button class="icon-btn icon-btn-danger" onclick="deleteProfile('${p.id}')" onmouseover="this.style.background='#7f1d1d';this.style.color='#f87171'" onmouseout="this.style.background='none';this.style.color='inherit'">${Icons.trash}</button>
-      </div>
-    </div>`;
-  }).join('');
-  return `
-  <div style="min-height:100vh;background:#0a0a0a;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;" class="animate-fade-in">
-    <div style="width:100%;max-width:600px;">
-      <div style="display:flex;align-items:center;gap:16px;margin-bottom:40px;">
-        <button onclick="setState({view:'profile-picker',editingProfileId:null})" style="color:#9ca3af;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#9ca3af'">${Icons.chevLeft}</button>
-        <h1 style="font-size:28px;font-weight:700;">Manage Profiles</h1>
-      </div>
-      <div class="space-y-3">${rows}</div>
-      <button onclick="setState({view:'create-profile',createName:'',createAvatar:'${AVATAR_TEMPLATES[0]}'})"
-        style="margin-top:24px;width:100%;border:1px dashed #3f3f46;border-radius:12px;padding:16px;display:flex;align-items:center;justify-content:center;gap:12px;color:#9ca3af;transition:all 0.2s;"
-        onmouseover="this.style.borderColor='#fff';this.style.color='#fff'" onmouseout="this.style.borderColor='#3f3f46';this.style.color='#9ca3af'">
-        ${Icons.plus} Add New Profile
-      </button>
-    </div>
-  </div>`;
-}
-
-function renderCreateProfile() {
-  const avatarBtns = AVATAR_TEMPLATES.map(url => `
-    <button onclick="setState({createAvatar:'${url}'})"
-      style="flex-shrink:0;width:56px;height:56px;border-radius:8px;overflow:hidden;border:2px solid ${state.createAvatar===url?'#dc2626':'transparent'};transform:${state.createAvatar===url?'scale(1.1)':'scale(1)'};transition:all 0.2s;padding:0;">
-      <img src="${url}" style="width:100%;height:100%;object-fit:cover;" />
-    </button>`).join('');
-  return `
-  <div style="min-height:100vh;background:#0a0a0a;color:#fff;display:flex;align-items:center;justify-content:center;padding:16px;" class="animate-fade-in">
-    <div style="width:100%;max-width:420px;">
-      <div style="display:flex;align-items:center;gap:16px;margin-bottom:32px;">
-        <button onclick="setState({view:'profile-picker'})" style="color:#9ca3af;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#9ca3af'">${Icons.chevLeft}</button>
-        <h2 style="font-size:32px;font-weight:700;">Add Profile</h2>
-      </div>
-      <div style="display:flex;align-items:center;gap:24px;margin-bottom:24px;">
-        <img src="${state.createAvatar}" style="width:80px;height:80px;border-radius:8px;background:#27272a;" />
-        <input id="create-name-input" class="auth-input" style="flex:1;" placeholder="Profile Name" value="${state.createName}"
-          oninput="state.createName=this.value"
-          onkeydown="if(event.key==='Enter')createProfile()" />
-      </div>
-      <p style="font-size:13px;color:#9ca3af;margin-bottom:12px;">Choose an avatar:</p>
-      <div style="display:flex;gap:12px;overflow-x:auto;padding-bottom:8px;" class="no-scrollbar">${avatarBtns}</div>
-      <div style="display:flex;gap:16px;margin-top:24px;">
-        <button onclick="createProfile()"
-          style="flex:1;background:#fff;color:#000;font-weight:700;padding:12px;border-radius:8px;font-size:16px;transition:all 0.2s;opacity:${state.createName.trim()?1:0.4};"
-          onmouseover="if(state.createName.trim())this.style.background='#dc2626',this.style.color='#fff'" onmouseout="this.style.background='#fff',this.style.color='#000'">SAVE</button>
-        <button onclick="setState({view:'profile-picker'})"
-          style="flex:1;border:1px solid #52525b;padding:12px;border-radius:8px;font-size:16px;transition:background 0.2s;"
-          onmouseover="this.style.background='#18181b'" onmouseout="this.style.background='none'">CANCEL</button>
-      </div>
-    </div>
-  </div>`;
-}
-
-function renderNavbar() {
-  return `
-  <nav class="navbar">
-    <div style="display:flex;align-items:center;gap:32px;">
-      <h1 onclick="setState({view:'home'})" style="color:#dc2626;font-weight:900;font-size:clamp(22px,3vw,28px);letter-spacing:-0.05em;cursor:pointer;">KASENFLIX</h1>
-      <div style="display:none;align-items:center;gap:24px;font-size:14px;font-weight:500;" id="nav-links">
-        <button onclick="setState({view:'home'})" style="color:#fff;transition:color 0.2s;" onmouseover="this.style.color='#9ca3af'" onmouseout="this.style.color='#fff'">Home</button>
-        <button onclick="goFinder()" style="color:#fff;display:flex;align-items:center;gap:4px;transition:color 0.2s;" onmouseover="this.style.color='#9ca3af'" onmouseout="this.style.color='#fff'">
-          <span style="color:#facc15;">${Icons.sparkles}</span> Finder
-        </button>
-        <button style="color:#6b7280;cursor:not-allowed;">Movies</button>
-        <button style="color:#6b7280;cursor:not-allowed;">TV Shows</button>
-      </div>
-    </div>
-    <div style="display:flex;align-items:center;gap:16px;">
-      <span style="color:#fff;cursor:pointer;" onmouseover="this.style.color='#9ca3af'" onmouseout="this.style.color='#fff'">${Icons.search}</span>
-      <button onclick="setState({view:'profile-picker'})" style="display:flex;align-items:center;gap:8px;">
-        ${state.activeProfile ? `<img src="${state.activeProfile.avatar}" style="width:32px;height:32px;border-radius:4px;" />
-        <span style="font-size:14px;font-weight:500;color:#fff;display:none;" id="profile-name">${state.activeProfile.name}</span>` : ''}
-      </button>
-    </div>
-  </nav>`;
-}
-
-function renderMovieGrid(items, limit=12) {
-  return items.slice(0, limit).map(item => {
-    const poster = getPoster(item);
-    if (!poster) return '';
-    const title = getTitle(item);
-    const rating = item.vote_average?.toFixed(1) || '?';
-    const type = item.media_type || (item.title ? 'movie' : 'tv');
-    return `
-    <div class="movie-card">
-      <img src="${poster}" alt="${title.replace(/"/g,'')}" loading="lazy" />
-      <div class="overlay">
-        <p style="font-weight:700;font-size:13px;color:#fff;">${title}</p>
-        <div style="display:flex;gap:8px;font-size:10px;margin-top:4px;color:#d1d5db;align-items:center;">
-          <span style="color:#facc15;">${Icons.star.replace('width="14" height="14"','width="10" height="10"')}</span>
-          <span>${rating}</span><span style="text-transform:capitalize;">${type}</span>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function renderHome() {
-  const hero = state.hero;
-  const heroTitle = hero ? getTitle(hero) : '';
-  const heroRating = hero ? (hero.vote_average?.toFixed(1) || '') : '';
-  const heroYear = hero ? ((hero.release_date || hero.first_air_date || '').slice(0,4)) : '';
-  const heroOverview = hero ? (hero.overview || '') : '';
-  const heroBg = hero ? (getBackdrop(hero) || getPoster(hero) || '') : '';
-
-  const rows = state.tmdbLoading ? `
-    <div style="display:flex;align-items:center;justify-content:center;padding:80px 0;">
-      <div class="spinner"></div>
-    </div>` : `
-    <section>
-      <h3 style="font-size:20px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px;">
-        <span style="color:#facc15;">${Icons.sparkles}</span> Trending This Week
-      </h3>
-      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;" class="movie-grid">${renderMovieGrid(state.content.trending)}</div>
-    </section>
-    <section>
-      <h3 style="font-size:20px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px;">
-        <span style="color:#ef4444;">${Icons.film}</span> Popular Movies
-      </h3>
-      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;" class="movie-grid">${renderMovieGrid(state.content.movies)}</div>
-    </section>
-    <section>
-      <h3 style="font-size:20px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px;">
-        <span style="color:#60a5fa;">${Icons.tv}</span> Popular TV Shows
-      </h3>
-      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;" class="movie-grid">${renderMovieGrid(state.content.tv)}</div>
-    </section>`;
-
-  return `
-  ${renderNavbar()}
-  <div class="animate-fade-in">
-    <section class="hero" style="height:80vh;position:relative;width:100%;">
-      ${heroBg ? `<img class="bg" src="${heroBg}" alt="${heroTitle.replace(/"/g,'')}" />` : '<div style="position:absolute;inset:0;background:#18181b;"></div>'}
-      <div class="grad1"></div>
-      <div class="grad2"></div>
-      ${hero ? `
-      <div class="hero-content">
-        <h2 style="font-size:clamp(40px,7vw,72px);font-weight:900;text-transform:uppercase;letter-spacing:-0.05em;line-height:1;font-style:italic;">${heroTitle}</h2>
-        <div style="display:flex;align-items:center;gap:16px;font-size:18px;margin-top:16px;">
-          <span style="color:#4ade80;font-weight:700;display:flex;align-items:center;gap:4px;">${Icons.star.replace('width="14" height="14"','width="16" height="16"').replace('currentColor','#4ade80')} ${heroRating}</span>
-          <span style="border:1px solid #9ca3af;padding:0 8px;font-size:13px;">HD</span>
-          <span>${heroYear}</span>
-        </div>
-        <p style="font-size:clamp(14px,2vw,18px);color:#e5e7eb;margin-top:16px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">${heroOverview}</p>
-        <div style="display:flex;gap:16px;margin-top:24px;">
-          <button style="background:#fff;color:#000;padding:12px 32px;border-radius:6px;display:flex;align-items:center;gap:8px;font-weight:700;font-size:18px;transition:background 0.2s;"
-            onmouseover="this.style.background='#e5e7eb'" onmouseout="this.style.background='#fff'">
-            ${Icons.play.replace('width="20" height="20"','width="24" height="24"')} Play
-          </button>
-          <button style="background:rgba(107,114,128,0.5);color:#fff;padding:12px 32px;border-radius:6px;display:flex;align-items:center;gap:8px;font-weight:700;font-size:18px;backdrop-filter:blur(4px);transition:background 0.2s;"
-            onmouseover="this.style.background='rgba(107,114,128,0.7)'" onmouseout="this.style.background='rgba(107,114,128,0.5)'">
-            ${Icons.info.replace('width="20" height="20"','width="24" height="24"')} More Info
-          </button>
-        </div>
-      </div>` : ''}
-    </section>
-    <div style="padding:0 24px 80px;margin-top:-80px;position:relative;z-index:10;" id="home-rows">
-      <div class="space-y-12">${rows}</div>
-    </div>
-  </div>
-  <button onclick="goFinder()"
-    style="position:fixed;bottom:24px;right:24px;width:56px;height:56px;background:#dc2626;border-radius:50%;display:flex;align-items:center;justify-content:center;z-index:50;box-shadow:0 10px 30px rgba(0,0,0,0.5);transition:transform 0.1s;display:none;"
-    id="fab-finder"
-    onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">${Icons.sparkles}</button>`;
-}
-
-function renderFinder() {
-  const fm = state.foundMovie;
-  const foundCard = fm ? `
-  <div class="finder-card animate-slide-up">
-    <div style="display:flex;flex-direction:column;">
-      <img src="${getPoster(fm) || ''}" style="width:100%;height:192px;object-fit:cover;" alt="${getTitle(fm).replace(/"/g,'')}" />
-      <div style="padding:24px;text-align:left;display:flex;flex-direction:column;justify-content:space-between;flex:1;">
-        <div>
-          <h3 style="font-size:22px;font-weight:700;margin-bottom:8px;">${getTitle(fm)}</h3>
-          <div style="display:flex;gap:12px;font-size:13px;color:#9ca3af;margin-bottom:16px;align-items:center;">
-            <span style="color:#4ade80;font-weight:700;display:flex;align-items:center;gap:4px;">${Icons.star.replace('currentColor','#4ade80')} ${fm.vote_average?.toFixed(1)}</span>
-            <span>${(fm.release_date||fm.first_air_date||'').slice(0,4)}</span>
-            <span style="border:1px solid #4b5563;padding:0 4px;font-size:10px;">HD</span>
-          </div>
-          <p style="color:#d1d5db;font-size:14px;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;">${fm.overview||''}</p>
-        </div>
-        <div style="display:flex;gap:12px;margin-top:24px;">
-          <button style="flex:1;background:#fff;color:#000;padding:10px;border-radius:8px;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:700;transition:background 0.2s;"
-            onmouseover="this.style.background='#e5e7eb'" onmouseout="this.style.background='#fff'">${Icons.play} Play Now</button>
-          <button onclick="handleFindMovie()" style="padding:10px 16px;background:#27272a;border-radius:8px;font-size:14px;font-weight:500;transition:background 0.2s;"
-            onmouseover="this.style.background='#3f3f46'" onmouseout="this.style.background='#27272a'">Try Again</button>
-        </div>
-      </div>
-    </div>
-  </div>` : '';
-
-  return `
-  ${renderNavbar()}
-  <div style="min-height:100vh;background:#000;color:#fff;padding-top:96px;padding-left:24px;padding-right:24px;" class="animate-fade-in">
-    <div style="max-width:640px;margin:0 auto;text-align:center;">
-      <div style="display:flex;justify-content:center;margin-bottom:32px;">
-        <div style="width:64px;height:64px;background:#dc2626;border-radius:50%;display:flex;align-items:center;justify-content:center;animation:pulse 2s infinite;">
-          ${Icons.sparkles.replace('width="20" height="20"','width="32" height="32"')}
-        </div>
-      </div>
-      <h2 style="font-size:clamp(28px,5vw,48px);font-weight:700;margin-bottom:16px;">Kasenflix Magic Finder</h2>
-      <p style="color:#9ca3af;margin-bottom:32px;">Can't decide? We'll pick something from real trending content just for you.</p>
-      <button onclick="handleFindMovie()"
-        style="width:100%;max-width:320px;background:#dc2626;padding:16px;border-radius:8px;font-weight:700;font-size:18px;transition:background 0.2s;box-shadow:0 10px 30px rgba(220,38,38,0.2);"
-        onmouseover="this.style.background='#b91c1c'" onmouseout="this.style.background='#dc2626'">
-        FIND ME SOMETHING
-      </button>
-      ${foundCard}
-    </div>
-  </div>`;
-}
-
-// ============================================================
-// RENDER
-// ============================================================
+// ================== RENDER ==================
 function render() {
   const root = document.getElementById('root');
-  if (!root) return;
-
   let html = '';
-  switch(state.view) {
-    case 'loading':  html = renderLoading(); break;
-    case 'auth':     html = renderAuth(); break;
-    case 'profile-picker': html = renderProfilePicker(); break;
-    case 'manage-profiles': html = renderManageProfiles(); break;
-    case 'create-profile': html = renderCreateProfile(); break;
-    case 'home':     html = renderHome(); break;
-    case 'finder':   html = renderFinder(); break;
-    default:         html = renderLoading();
+
+  if (state.view === 'loading' || state.view === 'auth') {
+    html = `<div style="height:100vh;background:#000;display:flex;align-items:center;justify-content:center;"><div style="width:50px;height:50px;border:4px solid #00f5ff;border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite;"></div></div>`;
+  } 
+  else if (state.view === 'profile-picker') {
+    // (Keep your existing profile picker logic or simplify)
+    html = `<div style="height:100vh;background:#0a0a0a;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+      <h1 style="font-size:48px;margin-bottom:40px;">Who's watching?</h1>
+      <div style="display:flex;gap:30px;flex-wrap:wrap;justify-content:center;">
+        ${state.profiles.map(p => `
+          <div onclick="selectProfile(${JSON.stringify(p).replace(/"/g,"'")})" style="text-align:center;cursor:pointer;">
+            <img src="${p.avatar}" style="width:140px;height:140px;border-radius:16px;border:4px solid #00f5ff;" />
+            <p style="margin-top:12px;font-size:20px;">${p.name}</p>
+          </div>
+        `).join('')}
+      </div>
+    </div>`;
+  } 
+  else {
+    // MAIN APP
+    html = `
+    <nav class="navbar">
+      <div class="logo" onclick="setState({view:'home', currentTab:'home'})">KASENFLIX</div>
+      <div class="nav-links">
+        <button class="${state.currentTab==='home'?'active':''}" onclick="setTab('home')">Home</button>
+        <button class="${state.currentTab==='movies'?'active':''}" onclick="setTab('movies')">Movies</button>
+        <button class="${state.currentTab==='tv'?'active':''}" onclick="setTab('tv')">TV Shows</button>
+        <button class="${state.currentTab==='finder'?'active':''}" onclick="setTab('finder')">Finder</button>
+      </div>
+      <div onclick="setState({view:'profile-picker'})" style="cursor:pointer;">
+        ${state.activeProfile ? `<img src="${state.activeProfile.avatar}" style="width:40px;height:40px;border-radius:50%;border:2px solid #00f5ff;">` : ''}
+      </div>
+    </nav>
+
+    ${state.currentTab === 'home' || state.currentTab === 'movies' || state.currentTab === 'tv' ? `
+    <div class="hero">
+      ${state.hero ? `<img class="hero-bg" src="${getBackdrop(state.hero)}" />` : ''}
+      <div class="hero-content">
+        <h1 style="font-size:clamp(40px,8vw,80px);line-height:1;">${getTitle(state.hero)}</h1>
+        <div style="margin:16px 0;display:flex;gap:16px;">
+          <button onclick="playItem(state.hero)" style="background:var(--primary);color:#000;padding:14px 32px;border:none;border-radius:9999px;font-weight:bold;font-size:18px;">▶ Play</button>
+        </div>
+      </div>
+    </div>` : ''}
+
+    <div class="row">
+      ${renderRows()}
+    </div>
+
+    <!-- PLAYER MODAL -->
+    <div id="player-modal" class="player-modal">
+      <div class="player-content">
+        <button class="close-player" onclick="closePlayer()">✕</button>
+        ${state.playerUrl ? `
+          <iframe width="100%" height="620" src="${state.playerUrl}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        ` : ''}
+      </div>
+    </div>`;
   }
 
-  root.innerHTML = `<div style="background:#000;min-height:100vh;color:#fff;">${html}</div>`;
-
-  // Post-render: fetch TMDB if needed, show nav links on desktop
-  if (state.view === 'home' || state.view === 'finder') {
-    fetchTMDB();
-    const navLinks = document.getElementById('nav-links');
-    const profileName = document.getElementById('profile-name');
-    const fab = document.getElementById('fab-finder');
-    if (navLinks && window.innerWidth >= 768) navLinks.style.display = 'flex';
-    if (profileName && window.innerWidth >= 640) profileName.style.display = 'inline';
-    if (fab && window.innerWidth < 768) fab.style.display = 'flex';
-
-    // Responsive grids
-    const grids = document.querySelectorAll('.movie-grid');
-    grids.forEach(g => {
-      if (window.innerWidth >= 1024) g.style.gridTemplateColumns = 'repeat(6,1fr)';
-      else if (window.innerWidth >= 768) g.style.gridTemplateColumns = 'repeat(5,1fr)';
-      else if (window.innerWidth >= 640) g.style.gridTemplateColumns = 'repeat(3,1fr)';
-      else g.style.gridTemplateColumns = 'repeat(2,1fr)';
-    });
-    if (window.innerWidth >= 768) {
-      const heroContent = document.querySelector('.hero-content');
-      if (heroContent) heroContent.style.left = '48px';
-    }
-  }
-
-  // Focus create name input
-  if (state.view === 'create-profile') {
-    setTimeout(() => document.getElementById('create-name-input')?.focus(), 50);
-  }
-
-  // Fix edit input focus
-  if (state.editingProfileId) {
-    setTimeout(() => {
-      const inp = document.getElementById(`edit-input-${state.editingProfileId}`);
-      if (inp) { inp.focus(); inp.select(); }
-    }, 50);
-  }
+  root.innerHTML = html;
 }
 
-// Expose globals
-window.setState = setState;
-window.handleSignIn = handleSignIn;
-window.handleSignUp = handleSignUp;
-window.handleGoogleSignIn = handleGoogleSignIn;
-window.handleAppleSignIn = handleAppleSignIn;
-window.handleSignOut = handleSignOut;
-window.createProfile = createProfile;
-window.deleteProfile = deleteProfile;
-window.renameProfile = renameProfile;
-window.handleFindMovie = handleFindMovie;
-window.fetchTMDB = fetchTMDB;
-window.goFinder = () => { setState({ view: 'finder', foundMovie: null }); fetchTMDB(); };
+function renderRows() {
+  let items = [];
+  let title = '';
 
-window.addEventListener('resize', () => {
-  if (state.view === 'home' || state.view === 'finder') render();
-});
+  if (state.currentTab === 'home') {
+    return `
+      <div class="row"><h2 class="row-title">🔥 Trending Now</h2><div class="scroll-row">${renderCards(state.content.trending)}</div></div>
+      <div class="row"><h2 class="row-title">🎬 Popular Movies</h2><div class="scroll-row">${renderCards(state.content.movies)}</div></div>
+      <div class="row"><h2 class="row-title">📺 Popular TV Shows</h2><div class="scroll-row">${renderCards(state.content.tv)}</div></div>
+    `;
+  }
+  if (state.currentTab === 'movies') {
+    return `<div class="row"><h2 class="row-title">Movies</h2><div class="scroll-row">${renderCards(state.content.movies)}</div></div>`;
+  }
+  if (state.currentTab === 'tv') {
+    return `<div class="row"><h2 class="row-title">TV Shows</h2><div class="scroll-row">${renderCards(state.content.tv)}</div></div>`;
+  }
+  return '';
+}
 
-// ============================================================
-// BOOT
-// ============================================================
-setState({ view: 'loading' });
-render();
-initFirebase();
-// Fallback: if Firebase is slow, show auth after 3s
-setTimeout(() => {
-  if (state.view === 'loading') setState({ view: 'auth' });
-}, 3000);
+function renderCards(items) {
+  return items.map(item => `
+    <div class="card" onclick='playItem(${JSON.stringify(item)})' >
+      <img src="${getPoster(item)}" alt="${getTitle(item)}" />
+    </div>
+  `).join('');
+}
+
+function setTab(tab) {
+  state.currentTab = tab;
+  fetchContent();
+  render();
+}
+
+// Expose functions
+window.setState = (patch) => { Object.assign(state, patch); render(); };
+window.selectProfile = (p) => { state.activeProfile = p; state.view = 'home'; fetchContent(); render(); };
+window.setTab = setTab;
+window.playItem = playItem;
+window.closePlayer = closePlayer;
+window.findSomething = findSomething;
+
+// Boot
+setState({view: 'profile-picker'});
+fetchContent();
 </script>
 </body>
 </html>
