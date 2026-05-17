@@ -4,14 +4,19 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Kasenflix</title>
+<!-- React & ReactDOM -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<!-- React Player for trailer & video playback -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script>
+<!-- React Player -->
 <script src="https://cdn.jsdelivr.net/npm/react-player/dist/react-player.min.js"></script>
 <style>
-  /* Your existing styles ... (keep your current styles) */
+  /* Basic styles, your existing styles plus modal styling */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #111; color: #fff; }
+  #root { min-height: 100vh; }
+  button { cursor: pointer; font-family: inherit; }
 
-  /* Additional styles for modal trailer/player */
+  /* Modal styles for trailer */
   .modal {
     position: fixed;
     inset: 0;
@@ -19,13 +24,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 999;
+    z-index: 9999;
   }
   .modal-content {
     position: relative;
     max-width: 90%;
     max-height: 80%;
-    background: #111;
+    background: #222;
     padding: 16px;
     border-radius: 8px;
   }
@@ -44,49 +49,43 @@
 <body>
 <div id="root"></div>
 <script>
-  const { useState, useEffect } = React;
-  const ReactPlayer = window['ReactPlayer'];
+const { useState, useEffect } = React;
+const ReactPlayer = window.ReactPlayer;
 
-  // Existing icons
-  const Icons = {
-    play: `<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>`,
-    info: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="8"/><line x1="12" y1="12" x2="12" y2="16"/></svg>`,
-    plus: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
-    sparkles: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3L13.5 8.5L19 10L13.5 11.5L12 17L10.5 11.5L5 10L10.5 8.5Z"/><path d="M5 3L5.8 5.2L8 6L5.8 6.8L5 9L4.2 6.8L2 6L4.2 5.2Z"/><path d="M19 13L19.8 15.2L22 16L19.8 16.8L19 19L18.2 16.8L16 16L18.2 15.2Z"/></svg>`,
-    search: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
-    logout: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>`,
-    trash: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>`,
-    edit: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`,
-    check: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>`,
-    star: `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
-    chevLeft: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>`,
-    film: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="17" y1="7" x2="22" y2="7"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="2" y1="17" x2="7" y2="17"/></svg>`,
-    tv: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></svg>`,
-    google: `<svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>`,
-    apple: `<svg width="16" height="18" viewBox="0 0 814 1000" fill="white"><path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-37.5-155.5-127.4C46.7 790.7 0 663 0 541.8c0-207.5 135.4-317.5 268.5-317.5 99.8 0 167.8 45.2 224.1 45.2 53.3 0 132.1-48.8 244-48.8zm-97.4-174.2c0-85.3-56.8-148.7-85.3-180.5-23.8-26.6-71.2-64.6-133.4-64.6-3.8 0-5.1 0-8.9.6 2 72.2 33.3 141.1 68 192.8 38.6 55.4 86.6 91.5 159.6 106.1z"/></svg>`
-  };
+// Firebase SDKs
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, signInWithPopup, GoogleAuthProvider, OAuthProvider } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getFirestore, doc, setDoc, deleteDoc, collection, onSnapshot, updateDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
-  // Firebase & TMDB Config
-  const TMDB_KEY = '70c6183515ac89cbab2dbdea3a6c6124';
-  const TMDB_BASE = 'https://api.themoviedb.org/3';
-  const IMG_BASE = 'https://image.tmdb.org/t/p/w500';
-  const BACKDROP_BASE = 'https://image.tmdb.org/t/p/original';
+// Firebase config (replace with your own)
+const firebaseConfig = {
+  apiKey: "AIzaSyAl6PzNwWQX5accTdcUZ8N7JPQA6NVoH4o",
+  authDomain: "log-in-data-f19a9.firebaseapp.com",
+  projectId: "log-in-data-f19a9",
+  storageBucket: "log-in-data-f19a9.appspot.com",
+  messagingSenderId: "546782630442",
+  appId: "1:546782630442:web:d8c81d5d8b6512bc82e953",
+  measurementId: "G-CJCTJYBL3Q"
+};
+const firebaseApp = initializeApp(firebaseConfig);
+const auth = getAuth(firebaseApp);
+const db = getFirestore(firebaseApp);
 
-  const AVATAR_TEMPLATES = [
-    "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix",
-    "https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka",
-    "https://api.dicebear.com/7.x/avataaars/svg?seed=Buddy",
-    "https://api.dicebear.com/7.x/avataaars/svg?seed=Max",
-    "https://api.dicebear.com/7.x/avataaars/svg?seed=Luna",
-    "https://api.dicebear.com/7.x/avataaars/svg?seed=Zara",
-  ];
+const TMDB_KEY = '70c6183515ac89cbab2dbdea3a6c6124';
+const TMDB_BASE = 'https://api.themoviedb.org/3';
+const IMG_BASE = 'https://image.tmdb.org/t/p/w500';
 
-  // Application state
-  const initialState = {
+// Utility functions
+const getPoster = (item) => item.poster_path ? `${IMG_BASE}${item.poster_path}` : '';
+const getBackdrop = (item) => item.backdrop_path ? `${IMG_BASE}${item.backdrop_path}` : '';
+const getTitle = (item) => item.title || item.name || 'Untitled';
+
+function App() {
+  const [state, setState] = useState({
     user: null,
     profiles: [],
     activeProfile: null,
-    view: 'loading', // loading | auth | profile-picker | manage-profiles | create-profile | home | finder | trailer
+    view: 'loading', // auth, profile-picker, home, finder, trailer
     authMode: 'signin',
     authError: '',
     content: { trending: [], movies: [], tv: [], genres: [] },
@@ -94,253 +93,375 @@
     foundMovie: null,
     tmdbLoading: false,
     editingProfileId: null,
-    newProfileName: '',
-    newProfileAvatar: AVATAR_TEMPLATES[0],
     createName: '',
-    createAvatar: AVATAR_TEMPLATES[0],
+    createAvatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix",
     trailerUrl: null,
     showTrailer: false,
     genreFilter: null,
     movieTypeFilter: 'movie' // or 'tv'
+  });
+
+  // Firebase auth listener
+  useEffect(() => {
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        // Load profiles
+        loadProfiles(user.uid, setState);
+        setState(prev => ({ ...prev, user, view: 'profile-picker' }));
+      } else {
+        setState(prev => ({ ...prev, user: null, profiles: [], activeProfile: null, view: 'auth' }));
+      }
+    });
+  }, []);
+
+  // Fetch TMDB data
+  useEffect(() => {
+    if (state.view === 'home') fetchTMDB(setState);
+  }, [state.view]);
+
+  // Firebase profile load
+  const loadProfiles = (uid, set) => {
+    const profilesRef = collection(db, 'artifacts', 'kasenflix-pro', 'users', uid, 'profiles');
+    const unsubscribe = onSnapshot(profilesRef, snap => {
+      const profiles = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      set({ profiles });
+    });
   };
 
-  function App() {
-    const [state, setState] = useState(initialState);
+  // Sign in
+  const handleSignIn = async () => {
+    const email = document.getElementById('auth-email')?.value;
+    const password = document.getElementById('auth-password')?.value;
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (e) {
+      setState(prev => ({ ...prev, authError: e.message }));
+    }
+  };
 
-    // Helper to update state
-    const update = (patch) => {
-      setState(prev => ({ ...prev, ...patch }));
-    };
+  // Sign up
+  const handleSignUp = async () => {
+    const email = document.getElementById('auth-email')?.value;
+    const password = document.getElementById('auth-password')?.value;
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+    } catch (e) {
+      setState(prev => ({ ...prev, authError: e.message }));
+    }
+  };
 
-    // Fetch user profiles & auth
-    useEffect(() => {
-      initFirebase(update);
-    }, []);
+  // Google sign-in
+  const handleGoogleSignIn = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (e) {
+      setState(prev => ({ ...prev, authError: e.message }));
+    }
+  };
 
-    // Fetch TMDB data
-    useEffect(() => {
-      if (state.view === 'home') fetchTMDB(update);
-    }, [state.view]);
+  // Sign out
+  const handleSignOut = async () => {
+    await signOut(auth);
+  };
 
-    // --- Firebase & TMDB functions from your code ---
-    // (Implement initFirebase, handleSignIn, handleSignUp, handleGoogleSignIn, handleAppleSignIn, handleSignOut, createProfile, deleteProfile, renameProfile, fetchTMDB, etc., with update() instead of setState())
+  // Create profile
+  const createProfile = async () => {
+    if (!state.user || !state.createName.trim()) return;
+    const profileId = crypto.randomUUID();
+    await setDoc(doc(db, 'artifacts', 'kasenflix-pro', 'users', state.user.uid, 'profiles', profileId), {
+      name: state.createName,
+      avatar: state.createAvatar,
+      myList: [],
+      continueWatching: [],
+      createdAt: Date.now()
+    });
+    // Reset
+    setState(prev => ({ ...prev, view: 'profile-picker', createName: '', createAvatar: '' }));
+  };
 
-    // For brevity, I will define only key parts here, focusing on new features
+  // Delete profile
+  const deleteProfile = async (profileId) => {
+    if (!profileId || !auth.currentUser) return;
+    await deleteDoc(doc(db, 'artifacts', 'kasenflix-pro', 'users', auth.currentUser.uid, 'profiles', profileId));
+  };
 
-    // Show trailer modal
-    const handleShowTrailer = (videoUrl) => {
-      update({ trailerUrl: videoUrl, showTrailer: true });
-    };
+  // Rename profile
+  const renameProfile = async (profileId, newName) => {
+    if (!profileId || !auth.currentUser || !newName.trim()) return;
+    await updateDoc(doc(db, 'artifacts', 'kasenflix-pro', 'users', auth.currentUser.uid, 'profiles', profileId), { name: newName });
+  };
 
-    const handleCloseTrailer = () => {
-      update({ showTrailer: false, trailerUrl: null });
-    };
-
-    // Genre filtering
-    const handleGenreFilter = (genreId) => {
-      update({ genreFilter: genreId });
-    };
-
-    // Movie/Show toggle
-    const handleToggleType = () => {
-      update({ movieTypeFilter: state.movieTypeFilter === 'movie' ? 'tv' : 'movie' });
-    };
-
-    // Handle movie/show click to show trailer first
-    const handleItemSelect = async (item) => {
-      // fetch trailer info from TMDB
-      const trailerUrl = await fetchTrailerUrl(item.id, item.media_type || (item.title ? 'movie' : 'tv'));
-      handleShowTrailer(trailerUrl);
-    };
-
-    // Fetch trailer URL from TMDB
-    const fetchTrailerUrl = async (id, media_type) => {
-      const url = `${TMDB_BASE}/${media_type}/${id}/videos?api_key=${TMDB_KEY}`;
-      const res = await fetch(url);
-      const data = await res.json();
-      const trailer = data.results.find(v => v.type === 'Trailer' && v.site === 'YouTube');
-      if (trailer) {
-        return `https://www.youtube.com/watch?v=${trailer.key}`;
-      }
-      return null;
-    };
-
-    // --- Render functions ---
-    const renderTrailerModal = () => {
-      if (!state.showTrailer || !state.trailerUrl) return null;
-      return (
-        <div className="modal" onClick={handleCloseTrailer}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="close-btn" onClick={handleCloseTrailer}>&times;</button>
-            <ReactPlayer url={state.trailerUrl} controls playing width="100%" height="100%" />
-          </div>
-        </div>
-      );
-    };
-
-    const getFilteredItems = () => {
-      const list = state.content[`${state.movieTypeFilter}s`]; // movies or tv
-      if (!list) return [];
-      if (!state.genreFilter) return list;
-      return list.filter(item => {
-        if (item.genre_ids && item.genre_ids.includes(state.genreFilter)) return true;
-        // For tv, genres are different, but for simplicity, assume genre_ids
-        return false;
-      });
-    };
-
-    const renderGenres = () => {
-      const genres = state.content.genres || [];
-      return (
-        <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', overflowX: 'auto' }}>
-          <button onClick={() => update({ genreFilter: null })} style={{ padding: '8px', borderRadius: '4px', background: !state.genreFilter ? '#444' : '#222' }}>All</button>
-          {genres.map(g => (
-            <button key={g.id} onClick={() => handleGenreFilter(g.id)} style={{ padding: '8px', borderRadius: '4px', background: (state.genreFilter === g.id) ? '#444' : '#222' }}>
-              {g.name}
-            </button>
-          ))}
-        </div>
-      );
-    };
-
-    // Main render
-    return (
-      <div style={{ background: '#111', color: '#fff', minHeight: '100vh' }}>
-        {/* Navbar with Movie/TV toggle */}
-        <nav style={{ display: 'flex', justifyContent: 'space-between', padding: '16px', background: '#222' }}>
-          <h1 style={{ cursor: 'pointer' }} onClick={() => update({ view: 'home' })}>Kasenflix</h1>
-          <div style={{ display: 'flex', gap: '16px' }}>
-            <button style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }} onClick={() => update({ view: 'home' })}>Home</button>
-            <button style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }} onClick={() => update({ view: 'finder' })}>Finder</button>
-            {/* Movie / TV toggle */}
-            <button style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }} onClick={handleToggleType}>
-              {`Switch to ${state.movieTypeFilter === 'movie' ? 'TV Shows' : 'Movies'}`}
-            </button>
-          </div>
-        </nav>
-
-        {/* Show trailer modal */}
-        {renderTrailerModal()}
-
-        {(() => {
-          switch (state.view) {
-            case 'loading':
-              return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}><div className="spinner"></div></div>;
-            case 'auth':
-              return (
-                <div style={{ padding: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  {/* Your auth UI... */}
-                  {/* For brevity, keep your existing auth code here */}
-                </div>
-              );
-            case 'profile-picker':
-              return (
-                <div style={{ padding: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  {/* ... your profile picker UI ... */}
-                </div>
-              );
-            case 'home':
-              // Render home with movies/shows
-              const items = getFilteredItems();
-              return (
-                <div style={{ padding: '16px' }}>
-                  {/* Genre filters */}
-                  {renderGenres()}
-                  {/* Movie/TV grid */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px' }}>
-                    {items.map(item => (
-                      <div key={item.id} style={{ cursor: 'pointer', borderRadius: '8px', overflow: 'hidden', background: '#222' }} onClick={() => handleItemSelect(item)}>
-                        <img src={getPoster(item)} alt={getTitle(item)} style={{ width: '100%', display: 'block' }} />
-                        <div style={{ padding: '8px' }}>
-                          <div style={{ fontWeight: 'bold', fontSize: '14px' }}>{getTitle(item)}</div>
-                          <div style={{ fontSize: '12px', color: '#888' }}>{(item.vote_average || '?').toFixed(1)}</div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              );
-            case 'finder':
-              // Render finder UI
-              return (
-                <div style={{ padding: '40px', textAlign: 'center' }}>
-                  <h2>Find a Movie or Show</h2>
-                  <button onClick={() => handleFindMovie()} style={{ padding: '12px 24px', margin: '16px', background: '#c00', color: '#fff', border: 'none', borderRadius: '8px' }}>Find Me Something</button>
-                  {state.foundMovie && (
-                    <div style={{ marginTop: '20px', background: '#222', padding: '16px', borderRadius: '8px' }}>
-                      <h3>{getTitle(state.foundMovie)}</h3>
-                      <img src={getPoster(state.foundMovie)} style={{ width: '200px', borderRadius: '8px' }} />
-                    </div>
-                  )}
-                </div>
-              );
-            default:
-              return null;
-          }
-        })()}
-
-        {/* Additional UI, such as create profile, manage profiles, etc., can be added similarly */}
-      </div>
-    );
-  }
-
-  // Initialize Firebase & other functions (simplified)
-  async function initFirebase(update) {
-    // Initialize Firebase, set user, profiles, etc.
-    // For brevity, consider your existing code
-    // After auth, set user and profiles
-    // setTimeout(() => update({ view: 'profile-picker' }), 1000);
-    // For demo, directly go to profile picker
-    update({ view: 'profile-picker' });
-  }
-
-  // Implement fetchTMDB, handleSignIn, handleSignUp, handleGoogleSignIn, handleAppleSignIn, handleSignOut, createProfile, deleteProfile, renameProfile, handleFindMovie
-  // For brevity, assume these are implemented similar to your previous code, but using update() instead of setState()
-
-  // Fetch TMDB data example
-  async function fetchTMDB(update) {
-    update({ tmdbLoading: true });
+  // Fetch TMDB data
+  const fetchTMDB = async (set) => {
+    set({ tmdbLoading: true });
     const trendingRes = await fetch(`${TMDB_BASE}/trending/all/week?api_key=${TMDB_KEY}`);
     const trendingData = await trendingRes.json();
-    // For simplicity, fetch movies, tv, genres
     const moviesRes = await fetch(`${TMDB_BASE}/movie/popular?api_key=${TMDB_KEY}`);
     const moviesData = await moviesRes.json();
     const tvRes = await fetch(`${TMDB_BASE}/tv/popular?api_key=${TMDB_KEY}`);
     const tvData = await tvRes.json();
-
-    // Fetch genres for movies & tv
     const genresRes = await fetch(`${TMDB_BASE}/genre/movie/list?api_key=${TMDB_KEY}`);
     const genresData = await genresRes.json();
 
-    update({
-      content: {
-        trending: trendingData.results,
-        movies: moviesData.results,
-        tv: tvData.results,
-        genres: genresData.genres
-      },
+    set({ 
+      content: { trending: trendingData.results, movies: moviesData.results, tv: tvData.results, genres: genresData.genres }, 
       hero: trendingData.results[0],
-      tmdbLoading: false,
+      tmdbLoading: false
     });
-  }
+  };
 
-  // Handle find random movie/show
+  // Find random movie/show
   const handleFindMovie = () => {
     const list = getFilteredItems();
     if (!list.length) return;
     const item = list[Math.floor(Math.random() * list.length)];
-    // Fetch trailer URL
     fetchTrailerUrl(item.id, item.media_type || (item.title ? 'movie' : 'tv')).then(trailerUrl => {
       if (trailerUrl) {
         handleShowTrailer(trailerUrl);
       } else {
-        alert('Trailer not available');
+        alert('Trailer not found');
       }
     });
   };
 
-  // Render
-  ReactDOM.render(<App />, document.getElementById('root'));
+  // Fetch trailer URL
+  const fetchTrailerUrl = async (id, media_type) => {
+    const url = `${TMDB_BASE}/${media_type}/${id}/videos?api_key=${TMDB_KEY}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    const trailer = data.results.find(v => v.type === 'Trailer' && v.site === 'YouTube');
+    if (trailer) {
+      return `https://www.youtube.com/watch?v=${trailer.key}`;
+    }
+    return null;
+  };
+
+  // Show trailer modal
+  const handleShowTrailer = (url) => {
+    set({ trailerUrl: url, showTrailer: true });
+  };
+
+  const handleCloseTrailer = () => {
+    set({ showTrailer: false, trailerUrl: null });
+  };
+
+  const getFilteredItems = () => {
+    const list = state.content[state.movieTypeFilter + 's'];
+    if (!list) return [];
+    if (!state.genreFilter) return list;
+    return list.filter(item => item.genre_ids && item.genre_ids.includes(state.genreFilter));
+  };
+
+  const handleGenreFilter = (genreId) => {
+    set({ genreFilter: genreId });
+  };
+
+  const handleToggleType = () => {
+    set(prev => ({ ...prev, movieTypeFilter: prev.movieTypeFilter === 'movie' ? 'tv' : 'movie' }));
+  };
+
+  // When user clicks a movie/show
+  const handleItemClick = async (item) => {
+    const trailerUrl = await fetchTrailerUrl(item.id, item.media_type || (item.title ? 'movie' : 'tv'));
+    if (trailerUrl) handleShowTrailer(trailerUrl);
+  };
+
+  // Render functions
+  const renderTrailerModal = () => {
+    if (!state.showTrailer || !state.trailerUrl) return null;
+    return (
+      <div className="modal" onClick={handleCloseTrailer}>
+        <div className="modal-content" onClick={e => e.stopPropagation()}>
+          <button className="close-btn" onClick={handleCloseTrailer}>&times;</button>
+          <ReactPlayer url={state.trailerUrl} controls playing width="100%" height="100%" />
+        </div>
+      </div>
+    );
+  };
+
+  const renderGenres = () => {
+    const genres = state.content.genres || [];
+    return (
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', overflowX: 'auto' }}>
+        <button onClick={() => handleGenreFilter(null)} style={{ padding: '8px', borderRadius: '4px', background: !state.genreFilter ? '#444' : '#222' }}>All</button>
+        {genres.map(g => (
+          <button key={g.id} onClick={() => handleGenreFilter(g.id)} style={{ padding: '8px', borderRadius: '4px', background: (state.genreFilter === g.id) ? '#444' : '#222' }}>
+            {g.name}
+          </button>
+        ))}
+      </div>
+    );
+  };
+
+  // Main render
+  return (
+    <div style={{ minHeight: '100vh', background: '#111', color: '#fff', paddingBottom: '40px' }}>
+      {/* Navbar */}
+      <nav style={{ display: 'flex', justifyContent: 'space-between', padding: '16px', background: '#222' }}>
+        <h1 style={{ cursor: 'pointer' }} onClick={() => setState({ view: 'home' })}>Kasenflix</h1>
+        <div style={{ display: 'flex', gap: '16px' }}>
+          <button style={{ background: 'none', border: 'none', color: '#fff' }} onClick={() => setState({ view: 'home' })}>Home</button>
+          <button style={{ background: 'none', border: 'none', color: '#fff' }} onClick={() => setState({ view: 'finder' })}>Finder</button>
+          {/* Toggle Movie/TV */}
+          <button style={{ background: 'none', border: 'none', color: '#fff' }} onClick={handleToggleType}>
+            {`Switch to ${state.movieTypeFilter === 'movie' ? 'TV Shows' : 'Movies'}`}
+          </button>
+        </div>
+      </nav>
+
+      {/* Trailer modal */}
+      {renderTrailerModal()}
+
+      {/* Content based on view */}
+      {(() => {
+        switch (state.view) {
+          case 'loading':
+            return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}><div className="spinner"></div></div>;
+          case 'auth':
+            return (
+              <div style={{ padding: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center', height: '80vh', justifyContent: 'center' }}>
+                <h2 style={{ marginBottom: '20px' }}>Kasenflix Login</h2>
+                <input id="auth-email" placeholder="Email" style={{ marginBottom: '10px', padding: '8px', width: '250px' }} />
+                <input id="auth-password" placeholder="Password" type="password" style={{ marginBottom: '10px', padding: '8px', width: '250px' }} />
+                {/** Show errors if any */}
+                <button style={{ padding: '10px 20px', marginBottom: '10px' }} onClick={handleSignIn}>Sign In</button>
+                <button style={{ padding: '10px 20px' }} onClick={handleSignUp}>Sign Up</button>
+                <div style={{ marginTop: '10px' }}>
+                  <button style={{ padding: '8px', fontSize: '14px' }} onClick={handleGoogleSignIn}>Sign in with Google</button>
+                </div>
+              </div>
+            );
+          case 'profile-picker':
+            return (
+              <div style={{ padding: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <h2>Who's Watching?</h2>
+                <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', marginTop: '20px' }}>
+                  { /* Profiles */ }
+                  {profileButtons(state, setState)}
+                </div>
+                <button style={{ marginTop: '30px', padding: '10px 20px' }} onClick={() => setState(prev => ({ ...prev, view: 'create-profile' }))}>Create Profile</button>
+                <button style={{ marginTop: '10px', padding: '10px 20px' }} onClick={handleSignOut}>Sign Out</button>
+              </div>
+            );
+          case 'create-profile':
+            return (
+              <div style={{ padding: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <h2>Create Profile</h2>
+                <input placeholder="Profile Name" value={state.createName} onChange={(e) => setState(prev => ({ ...prev, createName: e.target.value }))} style={{ marginBottom: '10px', padding: '8px', width: '250px' }} />
+                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '20px' }}>
+                  {AVATAR_TEMPLATES.map(url => (
+                    <img key={url} src={url} width={80} height={80} style={{ borderRadius: '8px', border: url === state.createAvatar ? '3px solid #f00' : '2px solid transparent', cursor: 'pointer' }} onClick={() => setState(prev => ({ ...prev, createAvatar: url }))} />
+                  ))}
+                </div>
+                <button style={{ padding: '10px 20px', marginBottom: '10px' }} onClick={createProfile}>Save Profile</button>
+                <button style={{ padding: '10px 20px' }} onClick={() => setState(prev => ({ ...prev, view: 'profile-picker' }))}>Cancel</button>
+              </div>
+            );
+          case 'home':
+            return (
+              <div style={{ padding: '20px' }}>
+                {/* Genre filters */}
+                {renderGenres()}
+                {/* Movies/Shows Grid */}
+                <div style={{ display: 'grid', gap: '12px', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))' }}>
+                  {getFilteredItems().map(item => (
+                    <div key={item.id} style={{ cursor: 'pointer', background: '#222', borderRadius: '8px', overflow: 'hidden' }} onClick={() => handleItemClick(item)}>
+                      <img src={getPoster(item)} style={{ width: '100%', display: 'block' }} />
+                      <div style={{ padding: '8px' }}>
+                        <div style={{ fontWeight: 'bold', fontSize: '14px' }}>{getTitle(item)}</div>
+                        <div style={{ fontSize: '12px', color: '#888' }}>⭐{(item.vote_average || '?').toFixed(1)}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          case 'finder':
+            return (
+              <div style={{ padding: '40px', textAlign: 'center' }}>
+                <h2>Find a Movie or Show</h2>
+                <button onClick={handleFindMovie} style={{ padding: '12px 24px', margin: '20px', background: '#c00', color: '#fff', border: 'none', borderRadius: '8px' }}>Find Me Something</button>
+                {/** Show found result */}
+                { /* You can add more details or trailer here */ }
+              </div>
+            );
+          default:
+            return null;
+        }
+      })()}
+    </div>
+  );
+
+  // Profile buttons
+  function profileButtons(state, setState) {
+    return state.profiles.map(p => (
+      <div key={p.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer' }} onClick={() => setState(prev => ({ ...prev, activeProfile: p, view: 'home' }))}>
+        <img src={p.avatar} width={80} height={80} style={{ borderRadius: '8px', marginBottom: '8px' }} />
+        <div style={{ color: '#ccc' }}>{p.name}</div>
+      </div>
+    ));
+  }
+
+  // Fetch trailer URL for a specific movie/show
+  async function fetchTrailerUrl(id, media_type) {
+    const url = `${TMDB_BASE}/${media_type}/${id}/videos?api_key=${TMDB_KEY}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    const trailer = data.results.find(v => v.type === 'Trailer' && v.site === 'YouTube');
+    if (trailer) {
+      return `https://www.youtube.com/watch?v=${trailer.key}`;
+    }
+    return null;
+  }
+
+  // Handle item click: show trailer
+  const handleItemClick = async (item) => {
+    const trailerUrl = await fetchTrailerUrl(item.id, item.media_type || (item.title ? 'movie' : 'tv'));
+    if (trailerUrl) {
+      setState(prev => ({ ...prev, trailerUrl, showTrailer: true }));
+    } else {
+      alert('Trailer not available.');
+    }
+  };
+
+  // Render trailer modal
+  const renderTrailerModal = () => {
+    if (!state.showTrailer || !state.trailerUrl) return null;
+    return (
+      <div className="modal" onClick={handleCloseTrailer}>
+        <div className="modal-content" onClick={e => e.stopPropagation()}>
+          <button className="close-btn" onClick={handleCloseTrailer}>&times;</button>
+          <ReactPlayer url={state.trailerUrl} controls playing width="100%" height="100%" />
+        </div>
+      </div>
+    );
+  };
+
+  const handleCloseTrailer = () => {
+    setState(prev => ({ ...prev, showTrailer: false, trailerUrl: null }));
+  };
+
+  return (
+    <>
+      {renderTrailerModal()}
+    </>
+  );
+}
+
+// Firebase profile management UI
+// (You can implement full profile management UI similar to previous snippets)
+
+const AVATAR_TEMPLATES = [
+  "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix",
+  "https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka",
+  "https://api.dicebear.com/7.x/avataaars/svg?seed=Buddy",
+  "https://api.dicebear.com/7.x/avataaars/svg?seed=Max",
+  "https://api.dicebear.com/7.x/avataaars/svg?seed=Luna",
+  "https://api.dicebear.com/7.x/avataaars/svg?seed=Zara",
+];
+
+ReactDOM.render(<App />, document.getElementById('root'));
 </script>
 </body>
 </html>
