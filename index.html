@@ -9,7 +9,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
-      theme: {
+      theme: { 
         extend: {
           colors: {
             brand: {
@@ -60,7 +60,7 @@
       signInWithPopup, GoogleAuthProvider, OAuthProvider, onAuthStateChanged, signOut 
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { 
-      getFirestore, doc, setDoc, deleteDoc, collection, onSnapshot, query, orderBy, limit 
+      getFirestore, doc, setDoc, deleteDoc, collection, onSnapshot, query, orderBy, limit, getDoc, updateDoc, arrayUnion 
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -80,7 +80,7 @@
     window._firebase = {
       auth, db, GoogleAuthProvider, OAuthProvider, signInWithEmailAndPassword, 
       createUserWithEmailAndPassword, signInWithPopup, onAuthStateChanged, signOut,
-      doc, setDoc, deleteDoc, collection, onSnapshot, query, orderBy, limit
+      doc, setDoc, deleteDoc, collection, onSnapshot, query, orderBy, limit, getDoc, updateDoc, arrayUnion
     };
     
     window._firebaseReady = true;
@@ -92,6 +92,7 @@
     const { useState, useEffect, useRef } = React;
 
     const TMDB_API_KEY = "70c6183515ac89cbab2dbdea3a6c6124";
+    const KASENFLIX_APP_ID = "kasenflix-pro";
     const AVATAR_TEMPLATES = [
       "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix",
       "https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka",
@@ -107,12 +108,12 @@
       const [user, setUser] = useState(null);
       const [profiles, setProfiles] = useState([]);
       const [activeProfile, setActiveProfile] = useState(null);
-      const [view, setView] = useState('auth'); // auth, profiles, home, movies, tv, finder, search
+      const [view, setView] = useState('auth'); // auth, profiles, home, movies, tv, finder, search, watchparty
       const [loading, setLoading] = useState(true);
       const [searchQuery, setSearchQuery] = useState('');
 
       const [selectedMedia, setSelectedMedia] = useState(null);
-      const [playerConfig, setPlayerConfig] = useState({ isOpen: false, item: null, isTrailer: false });
+      const [playerConfig, setPlayerConfig] = useState({ isOpen: false, item: null, isTrailer: false, season: 1, episode: 1, partyId: null });
 
       useEffect(() => {
         const handleFbReady = () => {
@@ -138,11 +139,11 @@
         return () => document.removeEventListener('firebase-ready', handleFbReady);
       }, []);
 
-      // Fetch Profiles
+      // Fetch Profiles - STRICT COMPLIANCE PATH RULE 1
       useEffect(() => {
         if (!user || !fbReady) return;
         const { db, collection, query, onSnapshot } = window._firebase;
-        const q = query(collection(db, 'users', user.uid, 'profiles'));
+        const q = query(collection(db, 'artifacts', KASENFLIX_APP_ID, 'users', user.uid, 'profiles'));
         const unsubscribe = onSnapshot(q, (snapshot) => {
           const fetched = [];
           snapshot.forEach((doc) => fetched.push({ id: doc.id, ...doc.data() }));
@@ -177,7 +178,7 @@
             />
           )}
 
-          {['home', 'movies', 'tv', 'finder', 'search'].includes(view) && activeProfile && (
+          {['home', 'movies', 'tv', 'finder', 'search', 'watchparty'].includes(view) && activeProfile && (
             <>
               <Sidebar 
                 activeProfile={activeProfile} 
@@ -199,21 +200,21 @@
                       user={user} 
                       profile={activeProfile} 
                       onOpenDetails={setSelectedMedia} 
-                      onPlay={(item) => setPlayerConfig({ isOpen: true, item, isTrailer: false })}
+                      onPlay={(item, s = 1, e = 1) => setPlayerConfig({ isOpen: true, item, isTrailer: false, season: s, episode: e, partyId: null })}
                     />
                   )}
                   {view === 'movies' && (
                     <CatalogScreen 
                       type="movie" 
                       onOpenDetails={setSelectedMedia} 
-                      onPlay={(item) => setPlayerConfig({ isOpen: true, item, isTrailer: false })}
+                      onPlay={(item, s = 1, e = 1) => setPlayerConfig({ isOpen: true, item, isTrailer: false, season: s, episode: e, partyId: null })}
                     />
                   )}
                   {view === 'tv' && (
                     <CatalogScreen 
                       type="tv" 
                       onOpenDetails={setSelectedMedia} 
-                      onPlay={(item) => setPlayerConfig({ isOpen: true, item, isTrailer: false })}
+                      onPlay={(item, s = 1, e = 1) => setPlayerConfig({ isOpen: true, item, isTrailer: false, season: s, episode: e, partyId: null })}
                     />
                   )}
                   {view === 'search' && (
@@ -224,7 +225,23 @@
                   )}
                   {view === 'finder' && (
                     <FinderScreen 
-                      onPlayTrailer={(item) => setPlayerConfig({ isOpen: true, item, isTrailer: true })} 
+                      onPlayTrailer={(item) => setPlayerConfig({ isOpen: true, item, isTrailer: true, season: 1, episode: 1, partyId: null })} 
+                    />
+                  )}
+                  {view === 'watchparty' && (
+                    <WatchPartyLobbyScreen 
+                      user={user}
+                      profile={activeProfile}
+                      onJoinParty={(party, activeMedia) => {
+                        setPlayerConfig({ 
+                          isOpen: true, 
+                          item: activeMedia, 
+                          isTrailer: false, 
+                          season: party.season || 1, 
+                          episode: party.episode || 1,
+                          partyId: party.id
+                        });
+                      }}
                     />
                   )}
                 </div>
@@ -236,13 +253,37 @@
             <DetailsModal 
               item={selectedMedia} 
               onClose={() => setSelectedMedia(null)} 
-              onPlay={(item) => {
+              onPlay={(item, s = 1, e = 1) => {
                 setSelectedMedia(null);
-                setPlayerConfig({ isOpen: true, item, isTrailer: false });
+                setPlayerConfig({ isOpen: true, item, isTrailer: false, season: s, episode: e, partyId: null });
               }}
               onPlayTrailer={(item) => {
                 setSelectedMedia(null);
-                setPlayerConfig({ isOpen: true, item, isTrailer: true });
+                setPlayerConfig({ isOpen: true, item, isTrailer: true, season: 1, episode: 1, partyId: null });
+              }}
+              onCreateParty={async (item, s = 1, e = 1) => {
+                setSelectedMedia(null);
+                // Create Party Document - STRICT PATH RULE 1
+                const partyId = Math.random().toString(36).substring(2, 8).toUpperCase();
+                const { db, doc, setDoc } = window._firebase;
+                const partyRef = doc(db, 'artifacts', KASENFLIX_APP_ID, 'public', 'data', 'watchparties', partyId);
+                const partyData = {
+                  id: partyId,
+                  hostId: user.uid,
+                  hostProfileId: activeProfile.id,
+                  hostName: activeProfile.name,
+                  hostAvatar: activeProfile.avatar,
+                  mediaId: item.id,
+                  type: item.type || (item.title ? 'movie' : 'tv'),
+                  title: item.title || item.name,
+                  season: s,
+                  episode: e,
+                  isPlaying: true,
+                  currentTime: 0,
+                  messages: []
+                };
+                await setDoc(partyRef, partyData);
+                setPlayerConfig({ isOpen: true, item, isTrailer: false, season: s, episode: e, partyId });
               }}
             />
           )}
@@ -253,7 +294,10 @@
               profile={activeProfile}
               item={playerConfig.item} 
               isTrailer={playerConfig.isTrailer}
-              onClose={() => setPlayerConfig({ isOpen: false, item: null, isTrailer: false })} 
+              season={playerConfig.season}
+              episode={playerConfig.episode}
+              partyId={playerConfig.partyId}
+              onClose={() => setPlayerConfig({ isOpen: false, item: null, isTrailer: false, season: 1, episode: 1, partyId: null })} 
             />
           )}
         </div>
@@ -359,7 +403,7 @@
     }
 
     // ==========================================
-    // 👥 PROFILES SCREEN Component
+    // 👥 PROFILES SCREEN Component - FIXED PERSISTENCE
     // ==========================================
     function ProfilesScreen({ user, profiles, onSelectProfile }) {
       const [isCreating, setIsCreating] = useState(false);
@@ -378,15 +422,23 @@
         if (!newProfileName.trim()) return;
         const color = colors[profiles.length % colors.length];
         const avatar = AVATAR_TEMPLATES[profiles.length % AVATAR_TEMPLATES.length];
+        
+        // Profiles path complies strictly with RULE 1
         const { db, collection, doc, setDoc } = window._firebase;
-        await setDoc(doc(collection(db, 'users', user.uid, 'profiles')), { name: newProfileName, color, avatar });
+        const profileId = crypto.randomUUID();
+        await setDoc(doc(db, 'artifacts', KASENFLIX_APP_ID, 'users', user.uid, 'profiles', profileId), { 
+          name: newProfileName, 
+          color, 
+          avatar,
+          createdAt: Date.now()
+        });
         setIsCreating(false);
         setNewProfileName('');
       };
 
       const handleDelete = async (id) => {
-        const { db, collection, doc, deleteDoc } = window._firebase;
-        await deleteDoc(doc(db, 'users', user.uid, 'profiles', id));
+        const { db, doc, deleteDoc } = window._firebase;
+        await deleteDoc(doc(db, 'artifacts', KASENFLIX_APP_ID, 'users', user.uid, 'profiles', id));
       };
 
       return (
@@ -397,7 +449,7 @@
           
           <div className="flex flex-wrap justify-center gap-8 md:gap-12 mb-16 max-w-4xl z-10">
             {profiles.map(profile => (
-              <div key={profile.id} className="flex flex-col items-center group relative">
+              <div key={profile.id} className="flex flex-col items-center group relative animate-fade-in">
                 <div 
                   onClick={() => !isEditing && onSelectProfile(profile)}
                   className={`w-24 h-24 md:w-32 md:h-32 rounded-2xl ${profile.color} flex items-center justify-center text-4xl font-black cursor-pointer border-2 border-transparent group-hover:border-purple-500 transition-all duration-300 overflow-hidden relative shadow-xl shadow-black/50 hover:shadow-purple-500/10 hover:-translate-y-2`}
@@ -464,6 +516,7 @@
         { id: 'movies', label: 'Movies', icon: 'film' },
         { id: 'tv', label: 'TV Shows', icon: 'tv' },
         { id: 'finder', label: 'Finder', icon: 'compass' },
+        { id: 'watchparty', label: 'Watch Party', icon: 'users' }
       ];
 
       useEffect(() => {
@@ -604,13 +657,20 @@
         };
         loadHero();
 
-        const { db, collection, query, orderBy, limit, onSnapshot } = window._firebase;
-        const cwRef = collection(db, 'users', user.uid, 'profiles', profile.id, 'progress');
-        const q = query(cwRef, orderBy('timestamp', 'desc'), limit(15));
-        const unsub = onSnapshot(q, (snapshot) => {
+        // Continue watching complies strictly with RULE 1 & 2 (No limit or order queries in rules, fetch all and sort on client)
+        const { db, collection, query, onSnapshot } = window._firebase;
+        const cwRef = collection(db, 'artifacts', KASENFLIX_APP_ID, 'users', user.uid, 'progress');
+        const unsub = onSnapshot(cwRef, (snapshot) => {
           const cw = [];
-          snapshot.forEach(doc => cw.push({ ...doc.data(), isContinueWatching: true }));
-          setContinueWatching(cw);
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            if (data.profileId === profile.id) {
+              cw.push({ id: doc.id, ...data, isContinueWatching: true });
+            }
+          });
+          // Client-side sorting and limiting to comply with Rule 2
+          cw.sort((a, b) => b.timestamp - a.timestamp);
+          setContinueWatching(cw.slice(0, 10));
         });
         return () => unsub();
       }, [profile.id]);
@@ -709,7 +769,7 @@
       }, [type, selectedGenre]);
 
       return (
-        <div className="space-y-8">
+        <div className="space-y-8 animate-fade-in">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <h1 className="text-3xl font-black capitalize text-white">Explore {type === 'movie' ? 'Movies' : 'TV Shows'}</h1>
@@ -777,7 +837,7 @@
 
           <div 
             className={`w-full h-full border border-zinc-900 rounded-2xl overflow-hidden relative shadow-lg ${isTop10 ? 'w-2/3 ml-auto z-20' : ''}`}
-            onClick={() => isContinueWatching ? onPlay(item) : onOpenDetails(item)}
+            onClick={() => isContinueWatching ? onPlay(item, item.season || 1, item.episode || 1) : onOpenDetails(item)}
           >
             <img 
               src={`https://image.tmdb.org/t/p/w500${(isContinueWatching || item.backdrop_path) && !isTop10 ? item.backdrop_path || item.poster_path : item.poster_path}`} 
@@ -811,7 +871,8 @@
                   </div>
                 </div>
                 <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-[#08080c] to-transparent">
-                  <p className="text-white font-bold text-xs truncate mb-2">{item.title}</p>
+                  <p className="text-white font-bold text-xs truncate mb-1">{item.title}</p>
+                  {isTV && <p className="text-[10px] text-zinc-400 font-bold mb-2">Season {item.season} &bull; Episode {item.episode}</p>}
                   {item.progress > 0 && (
                     <div className="w-full h-1.5 bg-zinc-800 rounded-full overflow-hidden">
                       <div 
@@ -835,7 +896,7 @@
                 height: 'auto',
               }}
             >
-              <div className="relative aspect-video w-full cursor-pointer" onClick={() => onPlay(item)}>
+              <div className="relative aspect-video w-full cursor-pointer" onClick={() => onPlay(item, item.season || 1, item.episode || 1)}>
                 <img src={`https://image.tmdb.org/t/p/w500${item.backdrop_path || item.poster_path}`} className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0e0e16] via-[#0e0e16]/30 to-transparent"></div>
                 
@@ -870,7 +931,7 @@
                 </div>
 
                 <div className="flex items-center gap-2.5 pt-1.5">
-                  <button onClick={() => onPlay(item)} className="flex-1 bg-white hover:bg-zinc-200 text-black font-black text-xs uppercase tracking-wider py-3 rounded-xl flex items-center justify-center gap-2 transition duration-300">
+                  <button onClick={() => onPlay(item, item.season || 1, item.episode || 1)} className="flex-1 bg-white hover:bg-zinc-200 text-black font-black text-xs uppercase tracking-wider py-3 rounded-xl flex items-center justify-center gap-2 transition duration-300">
                     <i data-lucide="play" className="w-3 h-3 fill-black text-black"></i> Watch Now
                   </button>
                   <button onClick={() => onOpenDetails(item)} className="bg-[#1b1b2a] hover:bg-[#252538] border border-zinc-800 text-white p-3 rounded-xl transition duration-300">
@@ -893,7 +954,10 @@
       const [isHovered, setIsHovered] = useState(false);
 
       useEffect(() => {
-        if (initialItems) return;
+        if (initialItems) {
+          setItems(initialItems);
+          return;
+        }
         const fetchData = async () => {
           try {
             const res = await fetch(`https://api.themoviedb.org/3${endpoint}&api_key=${TMDB_API_KEY}`);
@@ -1048,13 +1112,53 @@
     }
 
     // ==========================================
-    // 📋 DETAILS MODAL Component
+    // 📋 DETAILS MODAL Component (with Season/Episode selector)
     // ==========================================
-    function DetailsModal({ item, onClose, onPlay, onPlayTrailer }) {
+    function DetailsModal({ item, onClose, onPlay, onPlayTrailer, onCreateParty }) {
       const isTV = item.media_type === 'tv' || item.type === 'tv' || item.first_air_date;
+      const [tvDetails, setTvDetails] = useState(null);
+      const [selectedSeason, setSelectedSeason] = useState(1);
+      const [episodes, setEpisodes] = useState([]);
+      const [fetchingEpisodes, setFetchingEpisodes] = useState(false);
+
+      // Load main series info to list seasons
+      useEffect(() => {
+        if (!isTV) return;
+        const fetchSeriesInfo = async () => {
+          try {
+            const res = await fetch(`https://api.themoviedb.org/3/tv/${item.id}?api_key=${TMDB_API_KEY}`);
+            const data = await res.json();
+            setTvDetails(data);
+            if (data.seasons && data.seasons.length > 0) {
+              const firstAvailableSeason = data.seasons.find(s => s.season_number > 0) || data.seasons[0];
+              setSelectedSeason(firstAvailableSeason.season_number);
+            }
+          } catch (e) { console.error("Error loading series metadata:", e); }
+        };
+        fetchSeriesInfo();
+      }, [item, isTV]);
+
+      // Load episode lists for chosen season
+      useEffect(() => {
+        if (!isTV || !selectedSeason) return;
+        const loadEpisodes = async () => {
+          setFetchingEpisodes(true);
+          try {
+            const res = await fetch(`https://api.themoviedb.org/3/tv/${item.id}/season/${selectedSeason}?api_key=${TMDB_API_KEY}`);
+            const data = await res.json();
+            setEpisodes(data.episodes || []);
+          } catch (e) { console.error("Error loading season episodes:", e); }
+          setFetchingEpisodes(false);
+        };
+        loadEpisodes();
+      }, [isTV, selectedSeason, item.id]);
+
+      useEffect(() => {
+        if (window.lucide) window.lucide.createIcons();
+      }, [tvDetails, episodes, fetchingEpisodes]);
 
       return (
-        <div className="fixed inset-0 z-50 flex justify-center pt-10 px-4 pb-10 overflow-y-auto bg-black/90 backdrop-blur-md animate-fade-in">
+        <div className="fixed inset-0 z-55 flex justify-center pt-10 px-4 pb-10 overflow-y-auto bg-black/90 backdrop-blur-md animate-fade-in">
           <div className="relative w-full max-w-4xl bg-[#0e0e16] rounded-3xl shadow-2xl border border-zinc-850 my-auto overflow-hidden animate-fade-in">
             <button onClick={onClose} className="absolute top-5 right-5 z-20 bg-zinc-900/60 text-white p-2.5 rounded-full hover:bg-zinc-800 transition backdrop-blur-sm border border-zinc-800/50">
               <i data-lucide="x" className="w-5 h-5"></i>
@@ -1067,32 +1171,236 @@
               <div className="absolute bottom-8 left-6 right-6 md:left-12">
                 <h2 className="text-3xl md:text-5xl font-black text-white mb-6 tracking-tight leading-none">{item.title || item.name}</h2>
                 <div className="flex flex-wrap gap-3">
-                  <button onClick={() => onPlay({...item, type: isTV ? 'tv' : 'movie'})} className="bg-purple-600 text-white px-8 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-purple-700 transition shadow-lg shadow-purple-600/10 text-sm">
-                    <i data-lucide="play" className="w-4 h-4 fill-white"></i> Stream Content
+                  <button onClick={() => onPlay({...item, type: isTV ? 'tv' : 'movie'}, 1, 1)} className="bg-purple-600 text-white px-8 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-purple-700 transition shadow-lg shadow-purple-600/10 text-sm">
+                    <i data-lucide="play" className="w-4 h-4 fill-white"></i> Play S1:E1
                   </button>
-                  <button onClick={() => onPlayTrailer({...item, type: isTV ? 'tv' : 'movie'})} className="bg-zinc-900 text-zinc-300 px-8 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-zinc-800 transition border border-zinc-800 text-sm">
+                  <button onClick={() => onPlayTrailer({...item, type: isTV ? 'tv' : 'movie'})} className="bg-zinc-950/80 text-zinc-300 px-8 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-zinc-800 transition border border-zinc-800 text-sm">
                     Watch Promo
+                  </button>
+                  <button onClick={() => onCreateParty({...item, type: isTV ? 'tv' : 'movie'}, 1, 1)} className="bg-[#1b1b2a] border border-purple-500/30 text-purple-400 px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-[#252538] transition text-sm">
+                    <i data-lucide="users" className="w-4 h-4"></i> Start Watch Party
                   </button>
                 </div>
               </div>
             </div>
 
-            <div className="p-6 md:p-12 flex flex-col md:flex-row gap-8">
-              <div className="md:w-2/3">
-                <div className="flex items-center gap-3 text-xs font-bold mb-4 uppercase tracking-widest text-zinc-500">
-                  <span className="text-green-500">{Math.round((item.vote_average || 0) * 10)}% Match</span>
-                  <span>&bull;</span>
-                  <span>{item.release_date?.split('-')[0] || item.first_air_date?.split('-')[0]}</span>
-                  <span>&bull;</span>
-                  <span className="border border-zinc-800 px-2 py-0.5 rounded text-zinc-400">{isTV ? 'TV Series' : 'Movie'}</span>
+            <div className="p-6 md:p-12 space-y-8">
+              <div className="flex flex-col md:flex-row gap-8">
+                <div className="md:w-2/3">
+                  <div className="flex items-center gap-3 text-xs font-bold mb-4 uppercase tracking-widest text-zinc-500">
+                    <span className="text-green-500">{Math.round((item.vote_average || 0) * 10)}% Match</span>
+                    <span>&bull;</span>
+                    <span>{item.release_date?.split('-')[0] || item.first_air_date?.split('-')[0]}</span>
+                    <span>&bull;</span>
+                    <span className="border border-zinc-850 px-2 py-0.5 rounded text-zinc-400">{isTV ? 'TV Series' : 'Movie'}</span>
+                  </div>
+                  <p className="text-zinc-400 text-base md:text-lg leading-relaxed">{item.overview}</p>
                 </div>
-                <p className="text-zinc-400 text-base md:text-lg leading-relaxed">{item.overview}</p>
+                <div className="md:w-1/3 flex flex-col gap-4 text-xs font-semibold bg-[#11111b] border border-zinc-850 p-6 rounded-2xl h-max">
+                  <div><span className="text-zinc-500 block mb-1">Total Hits:</span> <span className="text-zinc-300 text-sm font-bold">{item.popularity?.toFixed(0)}</span></div>
+                  <div><span className="text-zinc-500 block mb-1">Language Track:</span> <span className="text-zinc-300 text-sm uppercase font-bold">{item.original_language}</span></div>
+                </div>
               </div>
-              <div className="md:w-1/3 flex flex-col gap-4 text-xs font-semibold bg-[#11111b] border border-zinc-850 p-6 rounded-2xl h-max">
-                <div><span className="text-zinc-500 block mb-1">Total Hits:</span> <span className="text-zinc-300 text-sm font-bold">{item.popularity?.toFixed(0)}</span></div>
-                <div><span className="text-zinc-500 block mb-1">Audio Track:</span> <span className="text-zinc-300 text-sm uppercase font-bold">{item.original_language}</span></div>
+
+              {/* TV Episode Navigator */}
+              {isTV && tvDetails && (
+                <div className="border-t border-zinc-900 pt-8 space-y-6">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xl font-black text-white">Episodes List</h3>
+                    <select 
+                      value={selectedSeason} 
+                      onChange={(e) => setSelectedSeason(Number(e.target.value))}
+                      className="bg-[#11111b] border border-zinc-850 text-zinc-300 text-sm px-4 py-2 rounded-xl outline-none focus:border-purple-500 transition"
+                    >
+                      {tvDetails.seasons && tvDetails.seasons
+                        .filter(s => s.season_number > 0)
+                        .map(season => (
+                          <option key={season.id} value={season.season_number}>
+                            {season.name} ({season.episode_count} Episodes)
+                          </option>
+                        ))
+                      }
+                    </select>
+                  </div>
+
+                  {fetchingEpisodes ? (
+                    <div className="flex items-center justify-center py-12">
+                      <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {episodes.map(ep => (
+                        <div key={ep.id} className="bg-[#11111b] border border-zinc-850 rounded-2xl overflow-hidden p-4 flex gap-4 hover:border-purple-500/50 transition duration-300 group">
+                          <div className="relative w-28 h-18 bg-zinc-900 rounded-lg overflow-hidden shrink-0 aspect-video">
+                            {ep.still_path ? (
+                              <img src={`https://image.tmdb.org/t/p/w300${ep.still_path}`} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-zinc-700 font-bold text-xs bg-zinc-950">No Cover</div>
+                            )}
+                            <button 
+                              onClick={() => onPlay(item, selectedSeason, ep.episode_number)}
+                              className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all duration-300"
+                            >
+                              <i data-lucide="play" className="w-6 h-6 fill-purple-500 text-purple-500"></i>
+                            </button>
+                          </div>
+                          <div className="flex-1 min-w-0 flex flex-col justify-center">
+                            <div className="flex items-center justify-between gap-2">
+                              <h4 className="font-bold text-sm text-white truncate group-hover:text-purple-400 transition">
+                                {ep.episode_number}. {ep.name}
+                              </h4>
+                              <button 
+                                onClick={() => onCreateParty(item, selectedSeason, ep.episode_number)}
+                                className="text-zinc-500 hover:text-purple-400 p-1 rounded-md transition"
+                                title="Host Watch Party for this Episode"
+                              >
+                                <i data-lucide="users" className="w-3.5 h-3.5"></i>
+                              </button>
+                            </div>
+                            <p className="text-[11px] text-zinc-500 line-clamp-2 mt-1 leading-relaxed">{ep.overview || "No overview listed for this episode."}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ==========================================
+    // 👥 WATCH PARTY LOBBY SCREEN Component
+    // ==========================================
+    function WatchPartyLobbyScreen({ user, profile, onJoinParty }) {
+      const [partyCodeInput, setPartyCodeInput] = useState('');
+      const [activeParties, setActiveParties] = useState([]);
+      const [loadingParties, setLoadingParties] = useState(true);
+      const [error, setError] = useState('');
+
+      useEffect(() => {
+        const { db, collection, query, onSnapshot } = window._firebase;
+        const partyRef = collection(db, 'artifacts', KASENFLIX_APP_ID, 'public', 'data', 'watchparties');
+        
+        const unsub = onSnapshot(partyRef, (snapshot) => {
+          const fetched = [];
+          snapshot.forEach((doc) => {
+            fetched.push(doc.data());
+          });
+          setActiveParties(fetched);
+          setLoadingParties(false);
+        });
+        return () => unsub();
+      }, []);
+
+      const joinPartyByCode = async (e) => {
+        e?.preventDefault();
+        setError('');
+        if (!partyCodeInput.trim()) return;
+
+        const code = partyCodeInput.trim().toUpperCase();
+        const { db, doc, getDoc } = window._firebase;
+        const partySnap = await getDoc(doc(db, 'artifacts', KASENFLIX_APP_ID, 'public', 'data', 'watchparties', code));
+        
+        if (partySnap.exists()) {
+          const party = partySnap.data();
+          // Load TMDB Info
+          try {
+            const res = await fetch(`https://api.themoviedb.org/3/${party.type}/${party.mediaId}?api_key=${TMDB_API_KEY}`);
+            const mediaData = await res.json();
+            mediaData.type = party.type;
+            onJoinParty(party, mediaData);
+          } catch {
+            setError("Failed to fetch TMDB assets for this Watch Party.");
+          }
+        } else {
+          setError("Watch party code not found or expired.");
+        }
+      };
+
+      const joinDirect = async (party) => {
+        try {
+          const res = await fetch(`https://api.themoviedb.org/3/${party.type}/${party.mediaId}?api_key=${TMDB_API_KEY}`);
+          const mediaData = await res.json();
+          mediaData.type = party.type;
+          onJoinParty(party, mediaData);
+        } catch {
+          setError("Failed to join watch party.");
+        }
+      };
+
+      useEffect(() => {
+        if (window.lucide) window.lucide.createIcons();
+      }, [activeParties, loadingParties, error]);
+
+      return (
+        <div className="max-w-4xl mx-auto space-y-12 animate-fade-in">
+          <div className="text-center space-y-4">
+            <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight">Kasenflix Cinema Parties</h1>
+            <p className="text-zinc-500 text-sm md:text-base max-w-lg mx-auto">Stream movies and TV episodes alongside friends in a fully synchronized room with a real-time live chat panel.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6">
+            {/* Join Room by Code */}
+            <div className="bg-[#0e0e16] border border-zinc-850 p-8 rounded-3xl flex flex-col justify-center">
+              <h2 className="text-xl font-bold mb-4 flex items-center gap-2"><i data-lucide="key" className="text-purple-400 w-5 h-5"></i> Enter Party Code</h2>
+              <form onSubmit={joinPartyByCode} className="space-y-4">
+                <input 
+                  type="text" 
+                  placeholder="EX: A9F8X1" 
+                  value={partyCodeInput}
+                  onChange={(e) => setPartyCodeInput(e.target.value)}
+                  className="w-full bg-[#151522] border border-zinc-800 text-white font-bold text-center tracking-widest uppercase px-4 py-4 rounded-xl outline-none focus:border-purple-500 transition"
+                />
+                <button type="submit" className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3.5 rounded-xl transition duration-200">
+                  Connect to Room
+                </button>
+              </form>
+              {error && <p className="text-red-400 text-xs mt-3 font-semibold text-center">{error}</p>}
+            </div>
+
+            {/* Quick Party Creator Info */}
+            <div className="bg-[#0e0e16] border border-zinc-850 p-8 rounded-3xl flex flex-col justify-center">
+              <h2 className="text-xl font-bold mb-2 flex items-center gap-2"><i data-lucide="sparkles" className="text-purple-400 w-5 h-5"></i> Host Your Own Room</h2>
+              <p className="text-zinc-400 text-sm leading-relaxed mb-6">Want to control the screening? Select any movie card or TV show episode in details and click "Start Watch Party" to generate your shareable party code.</p>
+              <div className="flex items-center gap-3 bg-[#11111b] border border-zinc-850 p-4 rounded-2xl text-xs text-zinc-500">
+                <i data-lucide="shield-alert" className="text-purple-400 shrink-0"></i>
+                <span>Hosts are capable of synchronizing play actions for all joined audience members.</span>
               </div>
             </div>
+          </div>
+
+          {/* Active Public Rooms */}
+          <div className="space-y-6 pt-6">
+            <h2 className="text-2xl font-black text-white">Active Rooms</h2>
+            {loadingParties ? (
+              <div className="flex items-center justify-center py-12"><div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div></div>
+            ) : activeParties.length === 0 ? (
+              <div className="text-center py-16 bg-[#0e0e16]/20 border border-dashed border-zinc-900 rounded-2xl text-zinc-500 text-sm">No streaming party lobbies are currently active. Host one to begin!</div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {activeParties.map(party => (
+                  <div key={party.id} className="bg-[#0e0e16] border border-zinc-850 p-5 rounded-2xl flex justify-between items-center hover:border-purple-500/40 transition duration-300">
+                    <div className="flex items-center gap-4">
+                      <div className="relative">
+                        <img src={party.hostAvatar} className="w-12 h-12 rounded-xl bg-zinc-900 object-cover" />
+                        <span className="absolute bottom-[-4px] right-[-4px] bg-purple-600 text-white font-black text-[9px] px-1.5 py-0.5 rounded-full uppercase scale-90">Host</span>
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-white text-base leading-snug">{party.title}</h4>
+                        {party.type === 'tv' && <p className="text-[11px] text-zinc-500 font-bold">Season {party.season} &bull; Episode {party.episode}</p>}
+                        <p className="text-xs text-zinc-400 mt-1">Room Code: <span className="text-purple-400 font-bold uppercase tracking-wider">{party.id}</span></p>
+                      </div>
+                    </div>
+                    <button onClick={() => joinDirect(party)} className="bg-purple-600/10 hover:bg-purple-600 border border-purple-500/20 text-purple-400 hover:text-white px-5 py-2.5 rounded-xl font-bold text-xs transition duration-200 shadow-md">
+                      Join Room
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       );
@@ -1101,15 +1409,21 @@
     // ==========================================
     // 🍿 PLAYER MODAL Component
     // ==========================================
-    function PlayerModal({ user, profile, item, isTrailer, onClose }) {
+    function PlayerModal({ user, profile, item, isTrailer, season, episode, partyId, onClose }) {
       const [loading, setLoading] = useState(true);
       const [trailerKey, setTrailerKey] = useState(null);
       const [startProgress, setStartProgress] = useState(0);
       const [activeServer, setActiveServer] = useState('server1');
 
+      // Watch Party States
+      const [party, setParty] = useState(null);
+      const [chatMessage, setChatMessage] = useState('');
+      const [chatList, setChatList] = useState([]);
+
       const internalProgress = useRef(0);
       const progressInterval = useRef(null);
 
+      // Initialize Player Data
       useEffect(() => {
         const initPlayer = async () => {
           setLoading(true);
@@ -1123,20 +1437,17 @@
           } else if (user && profile) {
             try {
               const { db, doc, onSnapshot } = window._firebase;
-              if (item.progress) {
-                setStartProgress(item.progress);
-                internalProgress.current = item.progress;
-              } else {
-                const docRef = doc(db, 'users', user.uid, 'profiles', profile.id, 'progress', item.id.toString());
-                const unsubscribe = onSnapshot(docRef, (docSnap) => {
-                   if (docSnap.exists()) {
-                     const p = docSnap.data().progress || 0;
-                     setStartProgress(p);
-                     internalProgress.current = p;
-                   }
-                   unsubscribe();
-                });
-              }
+              const progressId = `${profile.id}_${item.id}`;
+              const docRef = doc(db, 'artifacts', KASENFLIX_APP_ID, 'users', user.uid, 'progress', progressId);
+              
+              const unsubscribe = onSnapshot(docRef, (docSnap) => {
+                if (docSnap.exists()) {
+                  const p = docSnap.data().progress || 0;
+                  setStartProgress(p);
+                  internalProgress.current = p;
+                }
+                unsubscribe();
+              });
             } catch(e) { console.error("Progress read error", e); }
           }
           setLoading(false);
@@ -1144,8 +1455,10 @@
         initPlayer();
       }, [item, isTrailer, user, profile]);
 
+      // Firebase Auto Progress Tracker
       useEffect(() => {
         if (isTrailer || !user || !profile || loading) return;
+
         const handleMessage = (e) => {
           try {
             const data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
@@ -1170,11 +1483,15 @@
         };
       }, [loading, isTrailer]);
 
+      // Save watch progress complying strictly with RULE 1 (Private progress location)
       const saveProgress = async (secs) => {
         if (!item || !profile || !user || secs < 10) return;
         const { db, doc, setDoc } = window._firebase;
-        const docRef = doc(db, 'users', user.uid, 'profiles', profile.id, 'progress', item.id.toString());
+        const progressId = `${profile.id}_${item.id}`;
+        const docRef = doc(db, 'artifacts', KASENFLIX_APP_ID, 'users', user.uid, 'progress', progressId);
+        
         await setDoc(docRef, {
+          profileId: profile.id,
           mediaId: item.id,
           type: item.type || 'movie',
           title: item.title || item.name,
@@ -1182,29 +1499,101 @@
           progress: secs,
           duration: 3600,
           timestamp: Date.now(),
-          ...(item.type === 'tv' && { season: 1, episode: 1 }) 
+          season: season || 1,
+          episode: episode || 1
         }, { merge: true });
       };
 
+      // Seamless progressive server swapper - Saves progress of current source before switching
+      const handleServerChange = async (serverKey) => {
+        const currentProgressSecs = internalProgress.current;
+        setStartProgress(currentProgressSecs);
+        await saveProgress(currentProgressSecs);
+        setActiveServer(serverKey);
+      };
+
+      // Watch Party Synchronization & Chat Listener (Obeying RULE 1 - Public Watch Party Channel)
+      useEffect(() => {
+        if (!partyId) return;
+        const { db, doc, onSnapshot } = window._firebase;
+        const partyRef = doc(db, 'artifacts', KASENFLIX_APP_ID, 'public', 'data', 'watchparties', partyId);
+
+        const unsub = onSnapshot(partyRef, (docSnap) => {
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            setParty(data);
+            if (data.messages) {
+              setChatList(data.messages);
+            }
+          }
+        });
+        return () => unsub();
+      }, [partyId]);
+
+      // Save Watch Party Chat messages safely (nested arrays within public document prevents index creation errors - complying with RULE 2)
+      const sendPartyMessage = async (e) => {
+        e?.preventDefault();
+        if (!chatMessage.trim() || !partyId) return;
+
+        const { db, doc, updateDoc, arrayUnion } = window._firebase;
+        const partyRef = doc(db, 'artifacts', KASENFLIX_APP_ID, 'public', 'data', 'watchparties', partyId);
+        
+        const newMsg = {
+          id: crypto.randomUUID(),
+          senderName: profile.name,
+          senderAvatar: profile.avatar,
+          message: chatMessage.trim(),
+          timestamp: Date.now()
+        };
+
+        await updateDoc(partyRef, {
+          messages: arrayUnion(newMsg)
+        });
+        setChatMessage('');
+      };
+
+      // Construct customized Player URLs (Supporting start parameter offsets across premium mirrors)
       const getEmbedUrl = () => {
         if (isTrailer) {
           return `https://www.youtube.com/embed/${trailerKey}?autoplay=1&rel=0&modestbranding=1`;
         }
         const type = item.type === 'tv' ? 'tv' : 'movie';
+        
         if (activeServer === 'server1') {
-          const path = type === 'tv' ? `tv/${item.id}/1/1` : `movie/${item.id}`;
+          // 1. Custom VidPlus Premium
+          const path = type === 'tv' ? `tv/${item.id}/${season}/${episode}` : `movie/${item.id}`;
           let base = `https://player.vidplus.to/embed/${path}?autoplay=true&poster=true&title=true&download=true&watchparty=true&chromecast=true&servericon=true&setting=true&pip=true&icons=netflix&primarycolor=8b5cf6&secondarycolor=4c1d95&iconcolor=FFFFFF&logourl=https%3A%2F%2Fi.ibb.co%2F67wTJd9R%2Fpngimg-com-netflix-PNG11.png&font=Roboto&fontcolor=FFFFFF&fontsize=20&opacity=0.5`;
           if (startProgress > 0) base += `&progress=${startProgress}`;
           return base;
         } else if (activeServer === 'server2') {
-          return `https://vidsrc.xyz/embed/${type === 'tv' ? 'tv?tmdb=' + item.id + '&season=1&episode=1' : 'movie?tmdb=' + item.id}`;
+          // 2. EmbedMaster HD Server (Supporting start-time resumes)
+          let base = type === 'tv' 
+            ? `https://embedmaster.link/rvyn5y7vbe4k8862/tv/${item.id}/${season}/${episode}`
+            : `https://embedmaster.link/rvyn5y7vbe4k8862/movie/${item.id}`;
+          if (startProgress > 0) {
+            base += `?start=${startProgress}`;
+          }
+          return base;
         } else {
-          return `https://embed.su/embed/${type}/${item.id}/1/1`;
+          // 3. VidLink Pro Server (Supporting start-time resumes)
+          let base = type === 'tv'
+            ? `https://vidlink.pro/tv/${item.id}/${season}/${episode}`
+            : `https://vidlink.pro/movie/${item.id}`;
+          if (startProgress > 0) {
+            base += `?start=${startProgress}`;
+          }
+          return base;
         }
       };
 
+      useEffect(() => {
+        if (window.lucide) window.lucide.createIcons();
+      }, [activeServer, chatList, loading, party]);
+
       return (
         <div className="fixed inset-0 z-[100] bg-[#060609] flex flex-col md:flex-row animate-fade-in">
+          
+          {/* LEFT CONTROLS PANEL (Braflix Player Side Panel) */}
           <div className="w-full md:w-80 bg-[#0e0e16] border-b md:border-b-0 md:border-r border-zinc-900 p-6 flex flex-col justify-between z-20 overflow-y-auto">
             <div className="space-y-6">
               <button onClick={onClose} className="text-zinc-400 hover:text-white flex items-center gap-2 transition group font-bold">
@@ -1216,44 +1605,59 @@
                 <span className="text-zinc-500 font-bold uppercase text-[10px] tracking-wider block mb-2">Streaming Now</span>
                 <h2 className="text-white text-xl font-black tracking-tight">{item.title || item.name}</h2>
                 <p className="text-xs text-zinc-500 mt-1 capitalize">{item.type || 'Movie'}</p>
+                {item.type === 'tv' && (
+                  <p className="text-xs text-purple-400 font-bold mt-1">Season {season} &bull; Episode {episode}</p>
+                )}
               </div>
 
+              {/* Show Watch Party Code if active */}
+              {partyId && (
+                <div className="bg-purple-950/20 border border-purple-500/20 p-4 rounded-2xl">
+                  <span className="text-purple-400 font-bold uppercase text-[10px] tracking-wider block mb-1">Watch Party Code</span>
+                  <div className="text-xl font-black text-white uppercase tracking-widest">{partyId}</div>
+                  <p className="text-[10px] text-zinc-500 mt-1">Share this code with friends to sync streams!</p>
+                </div>
+              )}
+
+              {/* SERVER OPTIONS LIST (Server 4 Removed) */}
               {!isTrailer && (
                 <div className="space-y-3">
                   <span className="text-zinc-500 font-bold uppercase text-[10px] tracking-wider block">Select Audio/Server</span>
+                  
                   <button 
-                    onClick={() => setActiveServer('server1')}
-                    className={`w-full text-left p-3.5 rounded-xl border flex items-center justify-between font-bold text-sm transition-all ${activeServer === 'server1' ? 'bg-purple-600/10 border-purple-500/50 text-purple-400 shadow-lg' : 'bg-[#11111b] border-zinc-850 text-zinc-400'}`}
+                    onClick={() => handleServerChange('server1')}
+                    className={`w-full text-left p-3.5 rounded-xl border flex items-center justify-between font-bold text-sm transition-all ${activeServer === 'server1' ? 'bg-purple-600/10 border-purple-500/50 text-purple-400 shadow-lg' : 'bg-[#11111b] border-zinc-850 text-zinc-400 hover:border-zinc-800'}`}
                   >
                     <div className="flex items-center gap-3"><i data-lucide="server" className="w-4 h-4"></i><span>VidPlus Premium</span></div>
                     <span className="text-[10px] px-2 py-0.5 rounded font-bold uppercase bg-purple-500/20 text-purple-400">Fast</span>
                   </button>
 
                   <button 
-                    onClick={() => setActiveServer('server2')}
-                    className={`w-full text-left p-3.5 rounded-xl border flex items-center justify-between font-bold text-sm transition-all ${activeServer === 'server2' ? 'bg-purple-600/10 border-purple-500/50 text-purple-400 shadow-lg' : 'bg-[#11111b] border-zinc-850 text-zinc-400'}`}
+                    onClick={() => handleServerChange('server2')}
+                    className={`w-full text-left p-3.5 rounded-xl border flex items-center justify-between font-bold text-sm transition-all ${activeServer === 'server2' ? 'bg-purple-600/10 border-purple-500/50 text-purple-400 shadow-lg' : 'bg-[#11111b] border-zinc-850 text-zinc-400 hover:border-zinc-800'}`}
                   >
-                    <div className="flex items-center gap-3"><i data-lucide="server" className="w-4 h-4"></i><span>Vidsrc Mirror</span></div>
-                    <span className="text-[10px] px-2 py-0.5 rounded font-bold uppercase bg-purple-500/20 text-purple-400">HD</span>
+                    <div className="flex items-center gap-3"><i data-lucide="server" className="w-4 h-4"></i><span>EmbedMaster HD</span></div>
+                    <span className="text-[10px] px-2 py-0.5 rounded font-bold uppercase bg-purple-500/20 text-purple-400">VIP</span>
                   </button>
 
                   <button 
-                    onClick={() => setActiveServer('server3')}
-                    className={`w-full text-left p-3.5 rounded-xl border flex items-center justify-between font-bold text-sm transition-all ${activeServer === 'server3' ? 'bg-purple-600/10 border-purple-500/50 text-purple-400 shadow-lg' : 'bg-[#11111b] border-zinc-850 text-zinc-400'}`}
+                    onClick={() => handleServerChange('server3')}
+                    className={`w-full text-left p-3.5 rounded-xl border flex items-center justify-between font-bold text-sm transition-all ${activeServer === 'server3' ? 'bg-purple-600/10 border-purple-500/50 text-purple-400 shadow-lg' : 'bg-[#11111b] border-zinc-850 text-zinc-400 hover:border-zinc-800'}`}
                   >
-                    <div className="flex items-center gap-3"><i data-lucide="server" className="w-4 h-4"></i><span>Embed.su Server</span></div>
-                    <span className="text-[10px] px-2 py-0.5 rounded font-bold uppercase bg-purple-500/20 text-purple-400">VIP</span>
+                    <div className="flex items-center gap-3"><i data-lucide="server" className="w-4 h-4"></i><span>VidLink Pro</span></div>
+                    <span className="text-[10px] px-2 py-0.5 rounded font-bold uppercase bg-purple-500/20 text-purple-400">HD</span>
                   </button>
                 </div>
               )}
             </div>
 
             <div className="hidden md:flex items-center gap-3 bg-[#11111b] border border-zinc-850 p-4 rounded-2xl text-xs text-zinc-500 mt-6 leading-relaxed">
-              <i data-lucide="volume-2" className="w-6 h-6 text-purple-400 shrink-0"></i>
+              <i data-lucide="volume-2" className="text-purple-400 shrink-0 animate-pulse"></i>
               <span>If player lags, switch servers to automatically resume playback instantly!</span>
             </div>
           </div>
 
+          {/* MIDDLE STREAM IFRAME VIEWPORT CONTAINER */}
           <div className="flex-1 relative bg-black w-full h-full flex items-center justify-center">
             {loading ? (
                <div className="w-16 h-16 border-4 border-zinc-800 border-t-purple-500 rounded-full animate-spin"></div>
@@ -1272,6 +1676,52 @@
                ></iframe>
             )}
           </div>
+
+          {/* RIGHT SIDE LIVE CHAT PANEL (Only appears during a Watch Party!) */}
+          {partyId && (
+            <div className="w-full md:w-80 bg-[#0b0b11] border-t md:border-t-0 md:border-l border-zinc-900 flex flex-col h-72 md:h-full z-20">
+              <div className="p-4 border-b border-zinc-900 flex justify-between items-center bg-[#0e0e16]">
+                <div className="flex items-center gap-2">
+                  <i data-lucide="message-square" className="text-purple-400 w-4 h-4"></i>
+                  <span className="font-bold text-sm text-white">Live Party Chat</span>
+                </div>
+                <span className="text-[10px] bg-purple-500/10 border border-purple-500/30 text-purple-400 px-2 py-0.5 rounded-full font-black uppercase">Live</span>
+              </div>
+
+              {/* Chat Timeline */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 flex flex-col-reverse scrollbar-hide">
+                <div className="space-y-4">
+                  {chatList.map(msg => (
+                    <div key={msg.id} className="flex gap-3 text-xs animate-fade-in items-start">
+                      <img src={msg.senderAvatar} className="w-7 h-7 rounded-lg object-cover shrink-0 bg-zinc-950" />
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-bold text-zinc-300">{msg.senderName}</span>
+                          <span className="text-[9px] text-zinc-500">{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        </div>
+                        <p className="text-zinc-400 mt-1 leading-relaxed bg-[#11111b] border border-zinc-850 p-2.5 rounded-2xl rounded-tl-none">{msg.message}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Send Box */}
+              <form onSubmit={sendPartyMessage} className="p-4 border-t border-zinc-900 bg-[#0e0e16] flex gap-2">
+                <input 
+                  type="text" 
+                  placeholder="Say something to the room..." 
+                  value={chatMessage}
+                  onChange={(e) => setChatMessage(e.target.value)}
+                  className="flex-1 bg-[#151522] border border-zinc-800 text-white text-xs px-3.5 py-3 rounded-xl outline-none focus:border-purple-500 transition placeholder-zinc-500"
+                />
+                <button type="submit" className="bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-xl transition">
+                  <i data-lucide="send" className="w-4 h-4"></i>
+                </button>
+              </form>
+            </div>
+          )}
+
         </div>
       );
     }
