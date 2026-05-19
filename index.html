@@ -1,258 +1,1318 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kasenflix - Premium Streaming</title>
-    
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-
-    <style>
-        /* --- BRAND COLOR PALETTE (Updated to Blue) --- */
-        :root {
-            --bg-main: #0a0e1a;          
-            --bg-card: #141b2d;          
-            --accent-blue: #0070f3;      
-            --accent-glow: rgba(0, 112, 243, 0.4);
-            --text-main: #ffffff;
-            --text-muted: #8a99ad;
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kasenflix - Premium Streaming</title>
+  
+  <!-- Tailwind CSS Play CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { 
+        extend: {
+          colors: {
+            brand: {
+              dark: '#08080c',
+              surface: '#0e0e16',
+              purple: '#8b5cf6',
+              purpleHover: '#7c3aed'
+            }
+          }
         }
+      }
+    }
+  </script>
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        }
+  <!-- React & ReactDOM CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js" crossorigin></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js" crossorigin></script>
+  
+  <!-- Babel CDN for JSX Parsing -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-        body {
-            background-color: var(--bg-main);
-            color: var(--text-main);
-            overflow-x: hidden;
-        }
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
 
-        /* --- LOADING SCREEN FIX --- */
-        #loading-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: var(--bg-main);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            transition: opacity 0.5s ease, visibility 0.5s;
-        }
-
-        /* Blue Loading Spinner */
-        .spinner {
-            width: 60px;
-            height: 60px;
-            border: 4px solid rgba(255, 255, 255, 0.1);
-            border-top: 4px solid var(--accent-blue);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            box-shadow: 0 0 15px var(--accent-glow);
-            margin-bottom: 20px;
-        }
-
-        .loading-text {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            font-weight: 600;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* --- EXACT INTERFACE LAYOUT --- */
-        header {
-            padding: 20px 4%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: linear-gradient(to bottom, rgba(10,15,29,0.8), transparent);
-            position: fixed;
-            width: 100%;
-            top: 0;
-            z-index: 100;
-        }
-
-        .logo {
-            color: var(--accent-blue);
-            font-size: 1.8rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            text-shadow: 0 0 10px var(--accent-glow);
-        }
-
-        .main-layout {
-            padding: 100px 4% 40px 4%;
-            min-height: 100vh;
-        }
-
-        h2 {
-            font-size: 1.5rem;
-            margin-bottom: 20px;
-            border-left: 4px solid var(--accent-blue);
-            padding-left: 10px;
-        }
-
-        .movie-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 20px;
-        }
-
-        .movie-card {
-            background-color: var(--bg-card);
-            border-radius: 8px;
-            overflow: hidden;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            cursor: pointer;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .movie-card:hover {
-            transform: scale(1.05);
-            box-shadow: 0 10px 20px var(--accent-glow);
-            border-color: var(--accent-blue);
-        }
-
-        .movie-poster {
-            width: 100%;
-            aspect-ratio: 2/3;
-            background-color: #1a233d;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-muted);
-            font-size: 0.8rem;
-            text-align: center;
-        }
-
-        .movie-poster img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .movie-info {
-            padding: 12px;
-        }
-
-        .movie-title {
-            font-size: 0.9rem;
-            font-weight: 600;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-    </style>
+  <style>
+    /* Custom Scrollbar Hide */
+    .scrollbar-hide::-webkit-scrollbar {
+      display: none;
+    }
+    .scrollbar-hide {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    body {
+      background-color: #08080c;
+    }
+    .media-row {
+      scroll-behavior: smooth;
+    }
+  </style>
 </head>
-<body>
+<body class="text-zinc-100 antialiased selection:bg-purple-600 selection:text-white">
 
-    <div id="loading-screen">
-        <div class="spinner"></div>
-        <div class="loading-text">Lacing up your library...</div>
-    </div>
+  <div id="root"></div>
 
-    <header>
-        <div class="logo">Kasenflix</div>
-    </header>
+  <!-- Firebase Setup Map Module -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { 
+      getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+      signInWithPopup, GoogleAuthProvider, OAuthProvider, onAuthStateChanged, signOut 
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { 
+      getFirestore, doc, setDoc, deleteDoc, collection, onSnapshot, query, orderBy, limit, getDoc, updateDoc, arrayUnion 
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    <main class="main-layout">
-        <h2>Trending Now</h2>
-        <div class="movie-grid" id="movie-library">
-            </div>
-    </main>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAl6PzNwWQX5accTdcUZ8N7JPQA6NVoH4o",
+      authDomain: "log-in-data-f19a9.firebaseapp.com",
+      projectId: "log-in-data-f19a9",
+      storageBucket: "log-in-data-f19a9.appspot.com",
+      messagingSenderId: "546782630442",
+      appId: "1:546782630442:web:d8c81d5d8b6512bc82e953"
+    };
 
-    <script>
-        // ==========================================
-        // 🔑 LIVE CONFIGURATION 
-        // ==========================================
-        const firebaseConfig = {
-            apiKey: "AIzaSyAs1-D4X9zP0WvN3qY7mK5bL8x2tJ_Example",
-            authDomain: "kasenflix-premium.firebaseapp.com",
-            projectId: "kasenflix-premium",
-            storageBucket: "kasenflix-premium.appspot.com",
-            messagingSenderId: "4815162342",
-            appId: "1:4815162342:web:a1b2c3d4e5f6g7h8"
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // Expose Firebase services globally for our inline Babel-React app script
+    window._firebase = {
+      auth, db, GoogleAuthProvider, OAuthProvider, signInWithEmailAndPassword, 
+      createUserWithEmailAndPassword, signInWithPopup, onAuthStateChanged, signOut,
+      doc, setDoc, deleteDoc, collection, onSnapshot, query, orderBy, limit, getDoc, updateDoc, arrayUnion
+    };
+    
+    window._firebaseReady = true;
+    document.dispatchEvent(new Event('firebase-ready'));
+  </script>
+
+  <!-- React Babel App Component Script -->
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    const TMDB_API_KEY = "70c6183515ac89cbab2dbdea3a6c6124";
+    const KASENFLIX_APP_ID = "kasenflix-pro";
+
+    // Main App Component Router (No Profiles)
+    function App() {
+      const [fbReady, setFbReady] = useState(false);
+      const [user, setUser] = useState(null);
+      const [view, setView] = useState('auth'); // auth, home, movies, tv, finder, search
+      const [loading, setLoading] = useState(true);
+      const [searchQuery, setSearchQuery] = useState('');
+
+      const [selectedMedia, setSelectedMedia] = useState(null);
+      const [playerConfig, setPlayerConfig] = useState({ isOpen: false, item: null, isTrailer: false, season: 1, episode: 1 });
+
+      useEffect(() => {
+        const handleFbReady = () => {
+          setFbReady(true);
+          const { auth, onAuthStateChanged } = window._firebase;
+          onAuthStateChanged(auth, (currentUser) => {
+            setUser(currentUser);
+            if (currentUser) {
+              setView('home');
+            } else {
+              setView('auth');
+            }
+            setLoading(false);
+          });
         };
 
-        const TMDB_API_KEY = 'a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6'; 
-        const TMDB_ENDPOINT = `https://api.themoviedb.org/3/trending/movie/week?api_key=${TMDB_API_KEY}`;
+        if (window._firebaseReady) {
+          handleFbReady();
+        } else {
+          document.addEventListener('firebase-ready', handleFbReady);
+        }
+        return () => document.removeEventListener('firebase-ready', handleFbReady);
+      }, []);
 
-        // Initialize Firebase
-        let app = firebase.initializeApp(firebaseConfig);
-        let auth = firebase.auth();
+      const handleSearch = (q) => {
+        setSearchQuery(q);
+        if (q.trim().length > 0) setView('search');
+        else setView('home');
+      };
 
-        // ==========================================
-        // 🚀 LIFE CYCLE & UNFREEZE FIX
-        // ==========================================
-        window.addEventListener('DOMContentLoaded', () => {
-            // Check auth state immediately to kick off library fetch
-            auth.onAuthStateChanged((user) => {
-                initLibrary();
-            }, (error) => {
-                console.error("Auth initialization issue:", error);
-                initLibrary(); // Fail-safe fallback execution
-            });
-        });
+      if (loading || !fbReady) {
+        return (
+          <div className="min-h-screen bg-[#08080c] flex flex-col items-center justify-center">
+            <div className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+            <p className="text-zinc-500 font-semibold tracking-wider uppercase text-xs">Lacing up your library...</p>
+          </div>
+        );
+      }
 
-        async function initLibrary() {
-            try {
-                const response = await fetch(TMDB_ENDPOINT);
-                if (!response.ok) throw new Error("API stream broken");
+      return (
+        <div className="min-h-screen bg-[#08080c] text-zinc-100 flex flex-col md:flex-row">
+          {view === 'auth' && <AuthScreen />}
+          
+          {user && ['home', 'movies', 'tv', 'finder', 'search'].includes(view) && (
+            <>
+              <Sidebar 
+                view={view}
+                setView={(v) => { setSearchQuery(''); setView(v); }} 
+              />
+              
+              <div className="flex-1 md:pl-20 lg:pl-64 pb-24 md:pb-10 min-h-screen relative">
+                <TopBar 
+                  searchQuery={searchQuery}
+                  onSearch={handleSearch}
+                />
                 
-                const data = await response.json();
-                renderMovies(data.results);
-            } catch (error) {
-                console.error("Data load failure:", error);
-            } finally {
-                // 🛑 FIXED: This ALWAYS runs, breaking the infinite loading freeze
-                hideLoadingScreen();
-            }
-        }
+                <div className="p-4 md:p-8 lg:p-12">
+                  {view === 'home' && (
+                    <HomeScreen 
+                      user={user} 
+                      onOpenDetails={setSelectedMedia} 
+                      onPlay={(item, s = 1, e = 1) => setPlayerConfig({ isOpen: true, item, isTrailer: false, season: s, episode: e })}
+                    />
+                  )}
+                  {view === 'movies' && (
+                    <CatalogScreen 
+                      type="movie" 
+                      onOpenDetails={setSelectedMedia} 
+                      onPlay={(item, s = 1, e = 1) => setPlayerConfig({ isOpen: true, item, isTrailer: false, season: s, episode: e })}
+                    />
+                  )}
+                  {view === 'tv' && (
+                    <CatalogScreen 
+                      type="tv" 
+                      onOpenDetails={setSelectedMedia} 
+                      onPlay={(item, s = 1, e = 1) => setPlayerConfig({ isOpen: true, item, isTrailer: false, season: s, episode: e })}
+                    />
+                  )}
+                  {view === 'search' && (
+                    <SearchScreen 
+                      query={searchQuery} 
+                      onOpenDetails={setSelectedMedia} 
+                    />
+                  )}
+                  {view === 'finder' && (
+                    <FinderScreen 
+                      onPlayTrailer={(item) => setPlayerConfig({ isOpen: true, item, isTrailer: true, season: 1, episode: 1 })} 
+                    />
+                  )}
+                </div>
+              </div>
+            </>
+          )}
 
-        function renderMovies(movies) {
-            const container = document.getElementById('movie-library');
-            container.innerHTML = '';
+          {selectedMedia && (
+            <DetailsModal 
+              item={selectedMedia} 
+              onClose={() => setSelectedMedia(null)} 
+              onPlay={(item, s = 1, e = 1) => {
+                setSelectedMedia(null);
+                setPlayerConfig({ isOpen: true, item, isTrailer: false, season: s, episode: e });
+              }}
+              onPlayTrailer={(item) => {
+                setSelectedMedia(null);
+                setPlayerConfig({ isOpen: true, item, isTrailer: true, season: 1, episode: 1 });
+              }}
+            />
+          )}
+
+          {playerConfig.isOpen && (
+            <PlayerModal 
+              user={user}
+              item={playerConfig.item} 
+              isTrailer={playerConfig.isTrailer}
+              season={playerConfig.season}
+              episode={playerConfig.episode}
+              onClose={() => setPlayerConfig({ isOpen: false, item: null, isTrailer: false, season: 1, episode: 1 })} 
+            />
+          )}
+        </div>
+      );
+    }
+
+    // ==========================================
+    // 🔐 AUTH SCREEN Component
+    // ==========================================
+    function AuthScreen() {
+      const [isLogin, setIsLogin] = useState(true);
+      const [email, setEmail] = useState('');
+      const [password, setPassword] = useState('');
+      const [error, setError] = useState('');
+
+      const handleAuth = async (e) => {
+        e.preventDefault();
+        setError('');
+        const { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword } = window._firebase;
+        try {
+          if (isLogin) await signInWithEmailAndPassword(auth, email, password);
+          else await createUserWithEmailAndPassword(auth, email, password);
+        } catch (err) {
+          setError(err.message.replace('Firebase: ', ''));
+        }
+      };
+
+      const handleProviderAuth = async (providerName) => {
+        const { auth, signInWithPopup, GoogleAuthProvider, OAuthProvider } = window._firebase;
+        try {
+          const provider = providerName === 'google' ? new GoogleAuthProvider() : new OAuthProvider('apple.com');
+          await signInWithPopup(auth, provider);
+        } catch (err) {
+          setError(err.message);
+        }
+      };
+
+      return (
+        <div className="min-h-screen w-full relative flex items-center justify-center bg-[#060609] px-4 overflow-hidden">
+          <div className="absolute top-[-20%] left-[-20%] w-[60%] h-[60%] rounded-full bg-purple-900/10 blur-[150px] pointer-events-none"></div>
+          <div className="absolute bottom-[-20%] right-[-20%] w-[60%] h-[60%] rounded-full bg-indigo-900/10 blur-[150px] pointer-events-none"></div>
+
+          <div className="bg-[#0e0e16]/90 border border-zinc-800 p-8 md:p-12 rounded-2xl shadow-2xl w-full max-w-md backdrop-blur-md z-10">
+            <div className="text-center mb-8">
+              <div className="text-3xl font-black tracking-tight text-white mb-2">KASEN<span className="text-purple-500">FLIX</span></div>
+              <p className="text-zinc-500 text-sm">Elevate your streaming entertainment workspace</p>
+            </div>
             
-            movies.forEach(movie => {
-                const card = document.createElement('div');
-                card.className = 'movie-card';
-                card.innerHTML = `
-                    <div class="movie-poster">
-                        <img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" alt="${movie.title}" onerror="this.style.display='none'">
-                    </div>
-                    <div class="movie-info">
-                        <div class="movie-title">${movie.title}</div>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        }
+            {error && (
+              <div className="bg-red-500/10 border border-red-500/20 text-red-200 p-3 rounded-lg mb-6 text-sm flex items-center gap-2">
+                <i data-lucide="shield-alert" class="w-4 h-4 text-red-400"></i>
+                <span>{error}</span>
+              </div>
+            )}
+            
+            <form onSubmit={handleAuth} className="space-y-4">
+              <input 
+                type="email" 
+                placeholder="Email Address" 
+                value={email} 
+                onChange={e => setEmail(e.target.value)} 
+                required 
+                className="w-full bg-[#151522] border border-zinc-800 focus:border-purple-500 text-white px-4 py-3.5 rounded-lg outline-none transition" 
+              />
+              <input 
+                type="password" 
+                placeholder="Password" 
+                value={password} 
+                onChange={e => setPassword(e.target.value)} 
+                required 
+                className="w-full bg-[#151522] border border-zinc-800 focus:border-purple-500 text-white px-4 py-3.5 rounded-lg outline-none transition" 
+              />
+              <button type="submit" className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3.5 rounded-lg transition duration-200 shadow-lg shadow-purple-900/20">
+                {isLogin ? 'Sign In' : 'Sign Up'}
+              </button>
+            </form>
 
-        function hideLoadingScreen() {
-            const loader = document.getElementById('loading-screen');
-            if (loader) {
-                loader.style.opacity = '0';
-                setTimeout(() => {
-                    loader.style.visibility = 'hidden';
-                }, 500);
-            }
+            <div className="relative my-6 text-center">
+              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-zinc-800"></div></div>
+              <span className="relative bg-[#0e0e16] px-4 text-xs text-zinc-500 uppercase tracking-widest">Or Continue With</span>
+            </div>
+
+            <div className="flex gap-3">
+              <button onClick={() => handleProviderAuth('google')} className="flex-1 bg-[#151522] border border-zinc-800 hover:border-zinc-700 text-white font-semibold py-3 rounded-lg transition flex items-center justify-center gap-2 text-sm">
+                 <svg className="w-4 h-4" viewBox="0 0 24 24"><path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" /><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" /><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" /><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" /></svg>
+                 Google
+              </button>
+              <button onClick={() => handleProviderAuth('apple')} className="flex-1 bg-[#151522] border border-zinc-800 hover:border-zinc-700 text-white font-semibold py-3 rounded-lg transition flex items-center justify-center gap-2 text-sm">
+                <svg className="w-4 h-4" viewBox="0 0 384 512" fill="currentColor"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>
+                 Apple
+              </button>
+            </div>
+
+            <p className="mt-8 text-center text-zinc-500 text-sm">
+              {isLogin ? "Ready to join the crew? " : "Already have an account? "}
+              <span onClick={() => setIsLogin(!isLogin)} className="text-purple-400 font-semibold hover:underline cursor-pointer">
+                {isLogin ? "Sign up now" : "Sign in here"}
+              </span>
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    // ==========================================
+    // 🧭 SIDEBAR NAVIGATION Component
+    // ==========================================
+    function Sidebar({ view, setView }) {
+      const { signOut } = window._firebase;
+      const menuItems = [
+        { id: 'home', label: 'Home', icon: 'home' },
+        { id: 'movies', label: 'Movies', icon: 'film' },
+        { id: 'tv', label: 'TV Shows', icon: 'tv' },
+        { id: 'finder', label: 'Finder', icon: 'compass' }
+      ];
+
+      useEffect(() => {
+        if (window.lucide) window.lucide.createIcons();
+      }, [view]);
+
+      return (
+        <>
+          <aside className="hidden md:flex flex-col w-20 lg:w-64 fixed top-0 bottom-0 left-0 bg-[#0b0b11] border-r border-zinc-900/80 z-30 py-6 items-center lg:items-start lg:px-6">
+            <div className="text-xl font-black tracking-tighter text-white mb-10 flex items-center gap-2 cursor-pointer select-none" onClick={() => setView('home')}>
+              <span className="bg-purple-600 text-white p-1 rounded-lg text-sm font-black flex items-center justify-center w-8 h-8">K</span>
+              <span className="hidden lg:inline">KASEN<span className="text-purple-500">FLIX</span></span>
+            </div>
+
+            <nav className="flex-1 w-full space-y-2">
+              {menuItems.map(item => {
+                const active = view === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => setView(item.id)}
+                    className={`w-full flex items-center justify-center lg:justify-start gap-4 px-4 py-3.5 rounded-xl transition-all duration-300 font-semibold group relative ${
+                      active 
+                        ? 'bg-purple-600/10 text-purple-400 border border-purple-500/20' 
+                        : 'text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900/40'
+                    }`}
+                  >
+                    <i data-lucide={item.icon} className={`w-5 h-5 ${active ? 'text-purple-400' : 'text-zinc-500 group-hover:text-zinc-300'}`}></i>
+                    <span className="hidden lg:inline text-sm">{item.label}</span>
+                    {active && <span className="absolute left-1 top-4 w-1.5 h-3.5 bg-purple-500 rounded-r-md lg:hidden"></span>}
+                  </button>
+                );
+              })}
+            </nav>
+
+            <div className="w-full mt-auto space-y-4">
+              <div className="border-t border-zinc-900 pt-4 flex flex-col items-center lg:items-start gap-3">
+                <button onClick={() => signOut(window._firebase.auth)} className="flex items-center gap-3 text-zinc-500 hover:text-red-400 transition text-sm font-semibold w-full px-4 py-2">
+                  <i data-lucide="log-out" className="w-[18px] h-[18px]"></i>
+                  <span className="hidden lg:inline">Logout</span>
+                </button>
+              </div>
+            </div>
+          </aside>
+
+          <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-[#08080c]/90 border-t border-zinc-900 backdrop-blur-lg z-30 flex items-center justify-around px-4">
+            {menuItems.map(item => {
+              const active = view === item.id;
+              return (
+                <button key={item.id} onClick={() => setView(item.id)} className={`flex flex-col items-center justify-center p-2 rounded-xl transition ${active ? 'text-purple-400' : 'text-zinc-500'}`}>
+                  <i data-lucide={item.icon} className="w-5 h-5"></i>
+                  <span className="text-[10px] mt-1 font-bold">{item.label}</span>
+                </button>
+              );
+            })}
+          </nav>
+        </>
+      );
+    }
+
+    // ==========================================
+    // 🌐 TOP BAR UTILITIES Component
+    // ==========================================
+    function TopBar({ searchQuery, onSearch }) {
+      useEffect(() => {
+        if (window.lucide) window.lucide.createIcons();
+      }, [searchQuery]);
+
+      return (
+        <div className="w-full px-4 md:px-12 py-4 bg-[#08080c]/40 backdrop-blur-md sticky top-0 z-20 flex items-center justify-between border-b border-zinc-950">
+          <div className="md:hidden text-lg font-black tracking-tight text-white flex items-center gap-2">
+            <span className="bg-purple-600 text-white p-1 rounded-md text-xs font-black w-6 h-6 flex items-center justify-center">K</span>
+            KASEN<span className="text-purple-500">FLIX</span>
+          </div>
+
+          <div className="hidden md:flex items-center bg-[#11111b] border border-zinc-800/80 rounded-xl px-4 py-2.5 w-full max-w-md transition-all duration-300 focus-within:border-purple-500/50 focus-within:shadow-[0_0_15px_rgba(139,92,246,0.1)]">
+            <i data-lucide="search" className="w-[18px] h-[18px] text-zinc-500 mr-3"></i>
+            <input 
+              type="text" 
+              placeholder="Search movies, TV shows, genres..." 
+              value={searchQuery}
+              onChange={(e) => onSearch(e.target.value)}
+              className="bg-transparent text-white text-sm outline-none w-full placeholder-zinc-500"
+            />
+          </div>
+
+          <div className="flex items-center gap-4 ml-auto">
+            <div className="md:hidden relative bg-[#11111b] border border-zinc-800 rounded-lg flex items-center px-2 py-1 max-w-[150px]">
+              <i data-lucide="search" className="w-3.5 h-3.5 text-zinc-500 mr-1.5"></i>
+              <input 
+                type="text" 
+                placeholder="Search..." 
+                value={searchQuery}
+                onChange={(e) => onSearch(e.target.value)}
+                className="bg-transparent text-white text-xs outline-none w-full"
+              />
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ==========================================
+    // 🏠 HOME SCREEN Component
+    // ==========================================
+    function HomeScreen({ user, onOpenDetails, onPlay }) {
+      const [heroData, setHeroData] = useState(null);
+      const [continueWatching, setContinueWatching] = useState([]);
+
+      const fetchTMDB = async (endpoint) => {
+        try {
+          const url = `https://api.themoviedb.org/3${endpoint}${endpoint.includes('?') ? '&' : '?'}api_key=${TMDB_API_KEY}`;
+          const res = await fetch(url);
+          if (!res.ok) return { results: [] };
+          return await res.json();
+        } catch { return { results: [] }; }
+      };
+
+      useEffect(() => {
+        const loadHero = async () => {
+          const data = await fetchTMDB('/trending/all/week');
+          if (data.results?.length > 0) {
+            setHeroData(data.results[Math.floor(Math.random() * Math.min(8, data.results.length))]);
+          }
+        };
+        loadHero();
+
+        const { db, collection, onSnapshot } = window._firebase;
+        const cwRef = collection(db, 'artifacts', KASENFLIX_APP_ID, 'users', user.uid, 'progress');
+        const unsub = onSnapshot(cwRef, (snapshot) => {
+          const cw = [];
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            cw.push({ id: doc.id, ...data, isContinueWatching: true });
+          });
+          cw.sort((a, b) => b.timestamp - a.timestamp);
+          setContinueWatching(cw.slice(0, 10));
+        });
+        return () => unsub();
+      }, [user]);
+
+      useEffect(() => {
+        if (window.lucide) window.lucide.createIcons();
+      }, [heroData]);
+
+      return (
+        <div className="space-y-12">
+          {heroData && (
+            <div className="relative h-[55vh] md:h-[65vh] rounded-3xl overflow-hidden border border-zinc-900 shadow-2xl">
+              <img 
+                src={`https://image.tmdb.org/t/p/original${heroData.backdrop_path}`} 
+                alt={heroData.title} 
+                className="absolute inset-0 w-full h-full object-cover select-none"
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-[#08080c] via-[#08080c]/60 to-transparent"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-[#08080c] via-transparent to-transparent"></div>
+              
+              <div className="absolute bottom-0 left-0 right-0 p-6 md:p-12 z-10 max-w-3xl">
+                <span className="bg-purple-600/20 text-purple-400 border border-purple-500/20 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-4 inline-block backdrop-blur-sm">
+                  Trending Week
+                </span>
+                <h1 className="text-3xl md:text-5xl font-black mb-4 tracking-tight text-white leading-tight">
+                  {heroData.title || heroData.name}
+                </h1>
+                <p className="text-sm md:text-base text-zinc-400 line-clamp-3 mb-6 leading-relaxed max-w-xl">
+                  {heroData.overview}
+                </p>
+                <div className="flex flex-wrap gap-4">
+                  <button 
+                    onClick={() => onPlay({...heroData, type: heroData.media_type || 'movie'})} 
+                    className="bg-purple-600 hover:bg-purple-700 text-white font-bold px-6 py-3 rounded-xl flex items-center gap-2 transition shadow-lg shadow-purple-600/15"
+                  >
+                    <i data-lucide="play" className="w-4 h-4 fill-white"></i> Watch Now
+                  </button>
+                  <button 
+                    onClick={() => onOpenDetails({...heroData, type: heroData.media_type || 'movie'})} 
+                    className="bg-zinc-900/80 hover:bg-zinc-800 text-zinc-300 font-bold px-6 py-3 rounded-xl flex items-center gap-2 transition border border-zinc-800"
+                  >
+                    <i data-lucide="info" className="w-4 h-4"></i> Details
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="space-y-12">
+            {continueWatching.length > 0 && (
+              <MediaRow title="Continue Watching" items={continueWatching} onOpenDetails={onOpenDetails} onPlay={onPlay} isContinueWatching />
+            )}
+
+            <MediaRow title="Top 10 Today's Movies" endpoint="/movie/popular?region=US" onOpenDetails={onOpenDetails} onPlay={onPlay} isTop10 type="movie" />
+            <MediaRow title="Top 10 Today's TV Shows" endpoint="/tv/popular?region=US" onOpenDetails={onOpenDetails} onPlay={onPlay} isTop10 type="tv" />
+            
+            <MediaRow title="New Releases" endpoint="/trending/all/day" onOpenDetails={onOpenDetails} onPlay={onPlay} />
+            <MediaRow title="Futuristic Sci-Fi" endpoint="/discover/movie?with_genres=878" type="movie" onOpenDetails={onOpenDetails} onPlay={onPlay} />
+            <MediaRow title="Pulse-Pounding Action" endpoint="/discover/movie?with_genres=28" type="movie" onOpenDetails={onOpenDetails} onPlay={onPlay} />
+            <MediaRow title="Binge TV Dramas" endpoint="/discover/tv?with_genres=18" type="tv" onOpenDetails={onOpenDetails} onPlay={onPlay} />
+          </div>
+        </div>
+      );
+    }
+
+    // ==========================================
+    // 🧩 CATALOG SCREEN Component
+    // ==========================================
+    function CatalogScreen({ type, onOpenDetails, onPlay }) {
+      const [items, setItems] = useState([]);
+      const [genres, setGenres] = useState([]);
+      const [selectedGenre, setSelectedGenre] = useState('all');
+
+      const fetchTMDB = async (endpoint) => {
+        try {
+          const url = `https://api.themoviedb.org/3${endpoint}${endpoint.includes('?') ? '&' : '?'}api_key=${TMDB_API_KEY}`;
+          const res = await fetch(url);
+          if (!res.ok) return { results: [] };
+          return await res.json();
+        } catch { return { results: [] }; }
+      };
+
+      useEffect(() => {
+        const loadCatalog = async () => {
+          const gData = await fetchTMDB(`/genre/${type}/list`);
+          if (gData.genres) setGenres(gData.genres);
+
+          let discoverPath = `/discover/${type}?sort_by=popularity.desc`;
+          if (selectedGenre !== 'all') {
+            discoverPath += `&with_genres=${selectedGenre}`;
+          }
+          const mData = await fetchTMDB(discoverPath);
+          setItems((mData.results || []).filter(item => item.poster_path));
+        };
+        loadCatalog();
+      }, [type, selectedGenre]);
+
+      return (
+        <div className="space-y-8 animate-fade-in">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-black capitalize text-white">Explore {type === 'movie' ? 'Movies' : 'TV Shows'}</h1>
+              <p className="text-zinc-500 text-sm mt-1">Browse high quality streams by your favorite genres</p>
+            </div>
+
+            <select 
+              value={selectedGenre} 
+              onChange={(e) => setSelectedGenre(e.target.value)}
+              className="bg-[#11111b] border border-zinc-850 text-zinc-300 text-sm px-4 py-2.5 rounded-xl outline-none focus:border-purple-500 max-w-xs transition"
+            >
+              <option value="all">All Genres</option>
+              {genres.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
+            </select>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
+            {items.map(item => (
+              <MediaCard key={item.id} item={{...item, type}} onOpenDetails={onOpenDetails} onPlay={onPlay} />
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    // ==========================================
+    // 🧩 HOVER MEDIA CARD Component
+    // ==========================================
+    function MediaCard({ item, onOpenDetails, onPlay, isTop10, index, isContinueWatching }) {
+      const [hovered, setHovered] = useState(false);
+      const hoverTimeout = useRef(null);
+
+      const isTV = item.media_type === 'tv' || item.type === 'tv' || item.first_air_date;
+      const rating = item.vote_average ? item.vote_average.toFixed(1) : 'N/A';
+      const year = (item.release_date || item.first_air_date || '').split('-')[0] || 'N/A';
+      const lang = (item.original_language || 'EN').toUpperCase();
+
+      const handleMouseEnter = () => {
+        if (isContinueWatching) return;
+        hoverTimeout.current = setTimeout(() => {
+          setHovered(true);
+        }, 350);
+      };
+
+      const handleMouseLeave = () => {
+        if (hoverTimeout.current) clearTimeout(hoverTimeout.current);
+        setHovered(false);
+      };
+
+      useEffect(() => {
+        if (window.lucide) window.lucide.createIcons();
+      }, [hovered]);
+
+      return (
+        <div 
+          className={`relative select-none shrink-0 ${isTop10 ? 'w-44 md:w-56 flex items-end h-72' : 'w-32 md:w-48 lg:w-56'} ${isContinueWatching ? 'aspect-video w-64 md:w-80' : 'aspect-[2/3]'}`}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
+          {isTop10 && !hovered && (
+            <span className="absolute left-1 bottom-[-10px] text-[110px] md:text-[140px] font-black tracking-tighter leading-none select-none z-10" style={{ WebkitTextStroke: '2px rgba(139,92,246,0.3)', color: '#08080c' }}>
+              {index + 1}
+            </span>
+          )}
+
+          <div 
+            className={`w-full h-full border border-zinc-900 rounded-2xl overflow-hidden relative shadow-lg ${isTop10 ? 'w-2/3 ml-auto z-20' : ''} cursor-pointer`}
+            onClick={() => isContinueWatching ? onPlay(item, item.season || 1, item.episode || 1) : onOpenDetails(item)}
+          >
+            <img 
+              src={`https://image.tmdb.org/t/p/w500${(isContinueWatching || item.backdrop_path) && !isTop10 ? item.backdrop_path || item.poster_path : item.poster_path}`} 
+              alt={item.title || item.name} 
+              className="w-full h-full object-cover rounded-2xl"
+              loading="lazy"
+            />
+
+            {!isContinueWatching && (
+              <div className="absolute inset-0 p-3 flex flex-col justify-between pointer-events-none z-10">
+                <div className="flex justify-between items-center w-full">
+                  <span className="bg-black/60 border border-zinc-800 p-1.5 rounded-lg text-white/90 backdrop-blur-sm pointer-events-auto cursor-pointer hover:bg-purple-600 hover:border-purple-500 transition duration-300">
+                    <i data-lucide="bookmark" className="w-3.5 h-3.5"></i>
+                  </span>
+                  <span className="bg-[#11111b]/80 border border-zinc-800 px-2 py-1 rounded-lg text-yellow-500 font-bold text-xs flex items-center gap-1 backdrop-blur-sm shadow-md">
+                    <i data-lucide="star" className="w-3 h-3 fill-yellow-500 text-yellow-500"></i> {rating}
+                  </span>
+                </div>
+                <div className="bg-gradient-to-t from-black/90 via-black/40 to-transparent p-2 rounded-b-xl">
+                  <p className="text-white font-bold text-xs truncate">{item.title || item.name}</p>
+                  <p className="text-[10px] text-zinc-400 font-medium mt-0.5">{isTV ? 'TV Show' : 'Movie'} / {year} / {lang}</p>
+                </div>
+              </div>
+            )}
+
+            {isContinueWatching && (
+              <>
+                <div className="absolute inset-0 flex items-center justify-center bg-[#08080c]/50 opacity-0 hover:opacity-100 transition-opacity">
+                  <div className="border border-purple-500 p-3 rounded-full bg-purple-600/30 backdrop-blur-md">
+                    <i data-lucide="play" className="w-6 h-6 fill-white"></i>
+                  </div>
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-[#08080c] to-transparent">
+                  <p className="text-white font-bold text-xs truncate mb-1">{item.title}</p>
+                  {isTV && <p className="text-[10px] text-zinc-400 font-bold mb-2">Season {item.season} &bull; Episode {item.episode}</p>}
+                  {item.progress > 0 && (
+                    <div className="w-full h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-gradient-to-r from-purple-500 to-indigo-500" 
+                        style={{ width: `${Math.min(100, Math.max(5, (item.progress / (item.duration || 3600)) * 100))}%` }}
+                      ></div>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+
+          {hovered && (
+            <div 
+              className="absolute z-50 bg-[#0e0e16] border border-zinc-800 rounded-3xl overflow-hidden shadow-2xl shadow-black/80 pointer-events-auto"
+              style={{
+                top: '-20px',
+                left: isTop10 ? 'calc(33% - 15px)' : '-20px',
+                width: '320px',
+                height: 'auto',
+              }}
+            >
+              <div className="relative aspect-video w-full cursor-pointer" onClick={() => onPlay(item, item.season || 1, item.episode || 1)}>
+                <img src={`https://image.tmdb.org/t/p/w500${item.backdrop_path || item.poster_path}`} className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0e0e16] via-[#0e0e16]/30 to-transparent"></div>
+                
+                <div className="absolute top-3 left-3 right-3 flex justify-between items-center">
+                  <span className="bg-black/60 border border-zinc-800 p-1.5 rounded-lg text-white">
+                    <i data-lucide="bookmark" className="w-3.5 h-3.5"></i>
+                  </span>
+                  <span className="bg-[#11111b]/80 border border-zinc-800 px-2.5 py-1 rounded-lg text-yellow-500 font-bold text-xs flex items-center gap-1 backdrop-blur-sm shadow-md">
+                    <i data-lucide="star" className="w-3 h-3 fill-yellow-500 text-yellow-500"></i> {rating}
+                  </span>
+                </div>
+
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="bg-red-600 p-3.5 rounded-full shadow-[0_0_20px_rgba(220,38,38,0.6)]">
+                    <i data-lucide="play" className="w-6 h-6 fill-white"></i>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-5 space-y-4">
+                <div className="flex items-center gap-2.5 text-xs font-semibold text-zinc-400">
+                  <span className="capitalize text-zinc-300 bg-zinc-900 px-2 py-0.5 rounded border border-zinc-800">{isTV ? 'TV Series' : 'Movie'}</span>
+                  <span>&bull;</span>
+                  <span>{year}</span>
+                  <span>&bull;</span>
+                  <span>{lang}</span>
+                </div>
+
+                <div className="space-y-1.5">
+                  <h4 className="font-black text-white text-lg tracking-tight leading-snug line-clamp-1">{item.title || item.name}</h4>
+                  <p className="text-zinc-400 text-xs leading-relaxed line-clamp-3">{item.overview || "No overview script cataloged inside TMDB records."}</p>
+                </div>
+
+                <div className="flex items-center gap-2.5 pt-1.5">
+                  <button onClick={() => onPlay(item, item.season || 1, item.episode || 1)} className="flex-1 bg-white hover:bg-zinc-200 text-black font-black text-xs uppercase tracking-wider py-3 rounded-xl flex items-center justify-center gap-2 transition duration-300">
+                    <i data-lucide="play" className="w-3 h-3 fill-black text-black"></i> Watch Now
+                  </button>
+                  <button onClick={() => onOpenDetails(item)} className="bg-[#1b1b2a] hover:bg-[#252538] border border-zinc-800 text-white p-3 rounded-xl transition duration-300">
+                    <i data-lucide="info" className="w-4 h-4"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // ==========================================
+    // 🧩 MEDIA ROW Component (Fixed Scrolling)
+    // ==========================================
+    function MediaRow({ title, endpoint, items: initialItems, type, isTop10, isContinueWatching, onOpenDetails, onPlay }) {
+      const [items, setItems] = useState(initialItems || []);
+      const rowRef = useRef(null);
+
+      useEffect(() => {
+        if (initialItems) {
+          setItems(initialItems);
+          return;
         }
-    </script>
+        const fetchData = async () => {
+          try {
+            const res = await fetch(`https://api.themoviedb.org/3${endpoint}&api_key=${TMDB_API_KEY}`);
+            const data = await res.json();
+            const validItems = (data.results || []).filter(i => i.poster_path || i.backdrop_path);
+            setItems(isTop10 ? validItems.slice(0, 10) : validItems.map(i => ({...i, type: type || i.media_type || 'movie'})));
+          } catch (e) { console.error("TMDB Shelf Load error", e); }
+        };
+        fetchData();
+      }, [endpoint, initialItems, type, isTop10]);
+
+      const scroll = (direction) => {
+        if (rowRef.current) {
+          const scrollAmount = rowRef.current.clientWidth * 0.8;
+          rowRef.current.scrollBy({
+            left: direction === 'left' ? -scrollAmount : scrollAmount,
+            behavior: 'smooth'
+          });
+        }
+      };
+
+      if (items.length === 0) return null;
+
+      return (
+        <div className="relative group/row">
+          <h2 className="text-lg md:text-xl font-bold text-white mb-4 px-1">{title}</h2>
+          
+          <button 
+            onClick={() => scroll('left')} 
+            className="absolute left-0 top-1/2 -translate-y-1/2 w-12 h-12 bg-[#11111b]/90 border border-zinc-800 backdrop-blur-md z-20 hidden md:flex items-center justify-center hover:bg-[#11111b] transition-all rounded-full opacity-0 group-hover/row:opacity-100"
+          >
+            <i data-lucide="chevron-left" className="w-6 h-6 text-zinc-300"></i>
+          </button>
+
+          <div 
+            ref={rowRef} 
+            className="flex overflow-x-auto gap-4 px-1 scrollbar-hide py-4 media-row snap-x snap-mandatory"
+          >
+            {items.map((item, index) => (
+              <MediaCard 
+                key={item.id} 
+                item={item} 
+                index={index}
+                isTop10={isTop10}
+                isContinueWatching={isContinueWatching}
+                onOpenDetails={onOpenDetails} 
+                onPlay={onPlay} 
+              />
+            ))}
+          </div>
+
+          <button 
+            onClick={() => scroll('right')} 
+            className="absolute right-0 top-1/2 -translate-y-1/2 w-12 h-12 bg-[#11111b]/90 border border-zinc-800 backdrop-blur-md z-20 hidden md:flex items-center justify-center hover:bg-[#11111b] transition-all rounded-full opacity-0 group-hover/row:opacity-100"
+          >
+            <i data-lucide="chevron-right" className="w-6 h-6 text-zinc-300"></i>
+          </button>
+        </div>
+      );
+    }
+
+    // ==========================================
+    // 🔍 SEARCH SCREEN Component
+    // ==========================================
+    function SearchScreen({ query, onOpenDetails }) {
+      const [results, setResults] = useState([]);
+
+      useEffect(() => {
+        if (!query) return;
+        const fetchSearch = async () => {
+          const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}`);
+          const data = await res.json();
+          setResults((data.results || []).filter(i => i.poster_path && (i.media_type === 'movie' || i.media_type === 'tv')));
+        };
+        const debounce = setTimeout(fetchSearch, 300);
+        return () => clearTimeout(debounce);
+      }, [query]);
+
+      return (
+        <div className="space-y-6">
+          <h2 className="text-xl text-zinc-400">Search results for: <span className="text-purple-400 font-bold">"{query}"</span></h2>
+          {results.length === 0 ? (
+            <div className="text-zinc-500 text-sm mt-12 text-center py-20 bg-[#0e0e16]/20 border border-dashed border-zinc-900 rounded-2xl">No matched titles found.</div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
+              {results.map(item => (
+                <MediaCard key={item.id} item={{...item, type: item.media_type}} onOpenDetails={onOpenDetails} />
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // ==========================================
+    // 🎲 FINDER SCREEN Component
+    // ==========================================
+    function FinderScreen({ onPlayTrailer }) {
+      const [format, setFormat] = useState('any');
+      const [isSpinning, setIsSpinning] = useState(false);
+
+      const executeFinder = async () => {
+        setIsSpinning(true);
+        try {
+          const targetType = format === 'any' ? (Math.random() > 0.5 ? 'movie' : 'tv') : format;
+          const randomPage = Math.floor(Math.random() * 250) + 1;
+          
+          const res = await fetch(`https://api.themoviedb.org/3/discover/${targetType}?api_key=${TMDB_API_KEY}&page=${randomPage}`);
+          const data = await res.json();
+          
+          if (data.results?.length > 0) {
+            const item = data.results[Math.floor(Math.random() * data.results.length)];
+            item.media_type = targetType;
+            setTimeout(() => {
+              setIsSpinning(false);
+              onPlayTrailer(item);
+            }, 1000);
+          } else setIsSpinning(false);
+        } catch { setIsSpinning(false); }
+      };
+
+      return (
+        <div className="flex flex-col items-center justify-center min-h-[60vh] relative max-w-2xl mx-auto text-center px-4">
+          <div className="absolute w-[80%] h-[80%] rounded-full bg-purple-900/5 blur-[120px] pointer-events-none"></div>
+
+          <h1 className="text-4xl md:text-6xl font-black tracking-tight text-white mb-4">Indecisive?</h1>
+          <p className="text-zinc-500 text-base md:text-lg mb-10 max-w-md mx-auto leading-relaxed">
+            Let Kasenflix select a high-rated title and **instantly play the trailer** directly in front of you.
+          </p>
+
+          <div className="flex bg-[#11111b] border border-zinc-800 p-1 rounded-2xl mb-10 w-max mx-auto shadow-xl">
+            {['any', 'movie', 'tv'].map(t => (
+              <button 
+                key={t}
+                onClick={() => setFormat(t)}
+                className={`px-6 py-2.5 rounded-xl font-bold uppercase text-xs tracking-wider transition ${format === t ? 'bg-purple-600 text-white shadow' : 'text-zinc-500 hover:text-zinc-300'}`}
+              >
+                {t === 'any' ? 'Randomize' : t}
+              </button>
+            ))}
+          </div>
+
+          <button 
+            onClick={executeFinder}
+            disabled={isSpinning}
+            className="bg-purple-600 hover:bg-purple-700 disabled:bg-purple-800 text-white font-bold py-5 px-12 rounded-2xl shadow-xl shadow-purple-600/10 transition-all hover:scale-105 active:scale-95 text-lg tracking-wide flex items-center justify-center gap-3 mx-auto"
+          >
+            {isSpinning ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <i data-lucide="play" className="w-5 h-5 fill-white"></i>}
+            {isSpinning ? "Navigating Catalog..." : "Play Instantly"}
+          </button>
+        </div>
+      );
+    }
+
+    // ==========================================
+    // 📋 DETAILS MODAL Component
+    // ==========================================
+    function DetailsModal({ item, onClose, onPlay, onPlayTrailer }) {
+      const isTV = item.media_type === 'tv' || item.type === 'tv' || item.first_air_date;
+      const [tvDetails, setTvDetails] = useState(null);
+      const [selectedSeason, setSelectedSeason] = useState(1);
+      const [episodes, setEpisodes] = useState([]);
+      const [fetchingEpisodes, setFetchingEpisodes] = useState(false);
+
+      useEffect(() => {
+        if (!isTV) return;
+        const fetchSeriesInfo = async () => {
+          try {
+            const res = await fetch(`https://api.themoviedb.org/3/tv/${item.id}?api_key=${TMDB_API_KEY}`);
+            const data = await res.json();
+            setTvDetails(data);
+            if (data.seasons && data.seasons.length > 0) {
+              const firstAvailableSeason = data.seasons.find(s => s.season_number > 0) || data.seasons[0];
+              setSelectedSeason(firstAvailableSeason.season_number);
+            }
+          } catch (e) { console.error("Error loading series metadata:", e); }
+        };
+        fetchSeriesInfo();
+      }, [item, isTV]);
+
+      useEffect(() => {
+        if (!isTV || !selectedSeason) return;
+        const loadEpisodes = async () => {
+          setFetchingEpisodes(true);
+          try {
+            const res = await fetch(`https://api.themoviedb.org/3/tv/${item.id}/season/${selectedSeason}?api_key=${TMDB_API_KEY}`);
+            const data = await res.json();
+            setEpisodes(data.episodes || []);
+          } catch (e) { console.error("Error loading season episodes:", e); }
+          setFetchingEpisodes(false);
+        };
+        loadEpisodes();
+      }, [isTV, selectedSeason, item.id]);
+
+      useEffect(() => {
+        if (window.lucide) window.lucide.createIcons();
+      }, [tvDetails, episodes, fetchingEpisodes]);
+
+      return (
+        <div className="fixed inset-0 z-55 flex justify-center pt-10 px-4 pb-10 overflow-y-auto bg-black/90 backdrop-blur-md">
+          <div className="relative w-full max-w-4xl bg-[#0e0e16] rounded-3xl shadow-2xl border border-zinc-850 my-auto overflow-hidden">
+            <button onClick={onClose} className="absolute top-5 right-5 z-20 bg-zinc-900/60 text-white p-2.5 rounded-full hover:bg-zinc-800 transition backdrop-blur-sm border border-zinc-800/50">
+              <i data-lucide="x" className="w-5 h-5"></i>
+            </button>
+
+            <div className="relative w-full h-[45vh]">
+              <img src={`https://image.tmdb.org/t/p/original${item.backdrop_path || item.poster_path}`} className="w-full h-full object-cover select-none" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0e0e16] to-transparent"></div>
+              
+              <div className="absolute bottom-8 left-6 right-6 md:left-12">
+                <h2 className="text-3xl md:text-5xl font-black text-white mb-6 tracking-tight leading-none">{item.title || item.name}</h2>
+                <div className="flex flex-wrap gap-3">
+                  <button onClick={() => onPlay({...item, type: isTV ? 'tv' : 'movie'}, 1, 1)} className="bg-purple-600 text-white px-8 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-purple-700 transition shadow-lg shadow-purple-600/10 text-sm">
+                    <i data-lucide="play" className="w-4 h-4 fill-white"></i> Play S1:E1
+                  </button>
+                  <button onClick={() => onPlayTrailer({...item, type: isTV ? 'tv' : 'movie'})} className="bg-zinc-950/80 text-zinc-300 px-8 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-zinc-800 transition border border-zinc-800 text-sm">
+                    Watch Promo
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 md:p-12 space-y-8">
+              <div className="flex flex-col md:flex-row gap-8">
+                <div className="md:w-2/3">
+                  <div className="flex items-center gap-3 text-xs font-bold mb-4 uppercase tracking-widest text-zinc-500">
+                    <span className="text-green-500">{Math.round((item.vote_average || 0) * 10)}% Match</span>
+                    <span>&bull;</span>
+                    <span>{item.release_date?.split('-')[0] || item.first_air_date?.split('-')[0]}</span>
+                    <span>&bull;</span>
+                    <span className="border border-zinc-850 px-2 py-0.5 rounded text-zinc-400">{isTV ? 'TV Series' : 'Movie'}</span>
+                  </div>
+                  <p className="text-zinc-400 text-base md:text-lg leading-relaxed">{item.overview}</p>
+                </div>
+                <div className="md:w-1/3 flex flex-col gap-4 text-xs font-semibold bg-[#11111b] border border-zinc-850 p-6 rounded-2xl h-max">
+                  <div><span className="text-zinc-500 block mb-1">Total Hits:</span> <span className="text-zinc-300 text-sm font-bold">{item.popularity?.toFixed(0)}</span></div>
+                  <div><span className="text-zinc-500 block mb-1">Language Track:</span> <span className="text-zinc-300 text-sm uppercase font-bold">{item.original_language}</span></div>
+                </div>
+              </div>
+
+              {isTV && tvDetails && (
+                <div className="border-t border-zinc-900 pt-8 space-y-6">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xl font-black text-white">Episodes List</h3>
+                    <select 
+                      value={selectedSeason} 
+                      onChange={(e) => setSelectedSeason(Number(e.target.value))}
+                      className="bg-[#11111b] border border-zinc-850 text-zinc-300 text-sm px-4 py-2 rounded-xl outline-none focus:border-purple-500 transition"
+                    >
+                      {tvDetails.seasons && tvDetails.seasons
+                        .filter(s => s.season_number > 0)
+                        .map(season => (
+                          <option key={season.id} value={season.season_number}>
+                            {season.name} ({season.episode_count} Episodes)
+                          </option>
+                        ))
+                      }
+                    </select>
+                  </div>
+
+                  {fetchingEpisodes ? (
+                    <div className="flex items-center justify-center py-12">
+                      <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {episodes.map(ep => (
+                        <div key={ep.id} className="bg-[#11111b] border border-zinc-850 rounded-2xl overflow-hidden p-4 flex gap-4 hover:border-purple-500/50 transition duration-300 group">
+                          <div className="relative w-28 h-18 bg-zinc-900 rounded-lg overflow-hidden shrink-0 aspect-video">
+                            {ep.still_path ? (
+                              <img src={`https://image.tmdb.org/t/p/w300${ep.still_path}`} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-zinc-700 font-bold text-xs bg-zinc-950">No Cover</div>
+                            )}
+                            <button 
+                              onClick={() => onPlay(item, selectedSeason, ep.episode_number)}
+                              className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all duration-300"
+                            >
+                              <i data-lucide="play" className="w-6 h-6 fill-purple-500 text-purple-500"></i>
+                            </button>
+                          </div>
+                          <div className="flex-1 min-w-0 flex flex-col justify-center">
+                            <h4 className="font-bold text-sm text-white truncate group-hover:text-purple-400 transition">
+                              {ep.episode_number}. {ep.name}
+                            </h4>
+                            <p className="text-[11px] text-zinc-500 line-clamp-2 mt-1 leading-relaxed">{ep.overview || "No overview listed for this episode."}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ==========================================
+    // 🍿 PLAYER MODAL Component (with Episode List for TV)
+    // ==========================================
+    function PlayerModal({ user, item, isTrailer, season, episode, onClose }) {
+      const [loading, setLoading] = useState(true);
+      const [trailerKey, setTrailerKey] = useState(null);
+      const [startProgress, setStartProgress] = useState(0);
+      const [activeServer, setActiveServer] = useState('server1');
+      const [tvDetails, setTvDetails] = useState(null);
+      const [episodes, setEpisodes] = useState([]);
+      const [currentSeason, setCurrentSeason] = useState(season);
+
+      const internalProgress = useRef(0);
+      const progressInterval = useRef(null);
+
+      // Load TV details for episode list
+      useEffect(() => {
+        if (item.media_type !== 'tv' && item.type !== 'tv') return;
+        const fetchTV = async () => {
+          try {
+            const res = await fetch(`https://api.themoviedb.org/3/tv/${item.id}?api_key=${TMDB_API_KEY}`);
+            const data = await res.json();
+            setTvDetails(data);
+            
+            const epRes = await fetch(`https://api.themoviedb.org/3/tv/${item.id}/season/${currentSeason}?api_key=${TMDB_API_KEY}`);
+            const epData = await epRes.json();
+            setEpisodes(epData.episodes || []);
+          } catch (e) {}
+        };
+        fetchTV();
+      }, [item, currentSeason]);
+
+      useEffect(() => {
+        const initPlayer = async () => {
+          setLoading(true);
+          if (isTrailer) {
+            try {
+              const res = await fetch(`https://api.themoviedb.org/3/${item.media_type || item.type || 'movie'}/${item.id}/videos?api_key=${TMDB_API_KEY}`);
+              const data = await res.json();
+              const tr = data.results?.find(v => v.type === 'Trailer' && v.site === 'YouTube') || data.results?.find(v => v.site === 'YouTube');
+              setTrailerKey(tr ? tr.key : 'error');
+            } catch { setTrailerKey('error'); }
+          } else if (user) {
+            try {
+              const { db, doc, onSnapshot } = window._firebase;
+              const progressId = `${item.id}`;
+              const docRef = doc(db, 'artifacts', KASENFLIX_APP_ID, 'users', user.uid, 'progress', progressId);
+              
+              const unsubscribe = onSnapshot(docRef, (docSnap) => {
+                if (docSnap.exists()) {
+                  const p = docSnap.data().progress || 0;
+                  setStartProgress(p);
+                  internalProgress.current = p;
+                }
+              });
+            } catch(e) {}
+          }
+          setLoading(false);
+        };
+        initPlayer();
+      }, [item, isTrailer, user]);
+
+      useEffect(() => {
+        if (isTrailer || !user || loading) return;
+
+        const handleMessage = (e) => {
+          try {
+            const data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
+            if (data && data.event === 'timeupdate' && data.time) {
+              internalProgress.current = Math.floor(data.time);
+            }
+          } catch {}
+        };
+        window.addEventListener('message', handleMessage);
+
+        progressInterval.current = setInterval(() => {
+          internalProgress.current += 1;
+          if (internalProgress.current % 15 === 0 && internalProgress.current > 0) {
+            saveProgress(internalProgress.current);
+          }
+        }, 1000);
+
+        return () => {
+          window.removeEventListener('message', handleMessage);
+          if (progressInterval.current) clearInterval(progressInterval.current);
+          saveProgress(internalProgress.current);
+        };
+      }, [loading, isTrailer]);
+
+      const saveProgress = async (secs) => {
+        if (!item || secs < 10 || !user) return;
+        const { db, doc, setDoc } = window._firebase;
+        const progressId = `${item.id}`;
+        const docRef = doc(db, 'artifacts', KASENFLIX_APP_ID, 'users', user.uid, 'progress', progressId);
+        
+        await setDoc(docRef, {
+          mediaId: item.id,
+          type: item.type || 'movie',
+          title: item.title || item.name,
+          backdrop_path: item.backdrop_path || item.poster_path,
+          progress: secs,
+          duration: 3600,
+          timestamp: Date.now(),
+          season: season || 1,
+          episode: episode || 1
+        }, { merge: true });
+      };
+
+      const handleServerChange = async (serverKey) => {
+        const currentProgressSecs = internalProgress.current;
+        setStartProgress(currentProgressSecs);
+        await saveProgress(currentProgressSecs);
+        setActiveServer(serverKey);
+      };
+
+      const getEmbedUrl = () => {
+        if (isTrailer) {
+          return `https://www.youtube.com/embed/${trailerKey}?autoplay=1&rel=0&modestbranding=1`;
+        }
+        const type = item.type === 'tv' ? 'tv' : 'movie';
+        
+        if (activeServer === 'server1') {
+          const path = type === 'tv' ? `tv/${item.id}/${season}/${episode}` : `movie/${item.id}`;
+          let base = `https://player.vidplus.to/embed/${path}?autoplay=true&poster=true&title=true&download=true&watchparty=true&chromecast=true&servericon=true&setting=true&pip=true&icons=netflix&primarycolor=8b5cf6&secondarycolor=4c1d95&iconcolor=FFFFFF&logourl=https%3A%2F%2Fi.ibb.co%2F67wTJd9R%2Fpngimg-com-netflix-PNG11.png&font=Roboto&fontcolor=FFFFFF&fontsize=20&opacity=0.5`;
+          if (startProgress > 0) base += `&progress=${startProgress}`;
+          return base;
+        } else if (activeServer === 'server2') {
+          let base = type === 'tv' 
+            ? `https://embedmaster.link/rvyn5y7vbe4k8862/tv/${item.id}/${season}/${episode}`
+            : `https://embedmaster.link/rvyn5y7vbe4k8862/movie/${item.id}`;
+          if (startProgress > 0) base += `?start=${startProgress}`;
+          return base;
+        } else {
+          let base = type === 'tv'
+            ? `https://vidlink.pro/tv/${item.id}/${season}/${episode}`
+            : `https://vidlink.pro/movie/${item.id}`;
+          if (startProgress > 0) base += `?start=${startProgress}`;
+          return base;
+        }
+      };
+
+      useEffect(() => {
+        if (window.lucide) window.lucide.createIcons();
+      }, [activeServer, loading]);
+
+      return (
+        <div className="fixed inset-0 z-[100] bg-[#060609] flex flex-col md:flex-row animate-fade-in">
+          {/* LEFT CONTROLS PANEL */}
+          <div className="w-full md:w-80 bg-[#0e0e16] border-b md:border-b-0 md:border-r border-zinc-900 p-6 flex flex-col z-20 overflow-y-auto">
+            <div className="space-y-6">
+              <button onClick={onClose} className="text-zinc-400 hover:text-white flex items-center gap-2 transition group font-bold">
+                <i data-lucide="arrow-left" className="w-5 h-5 group-hover:-translate-x-1 transition duration-300"></i>
+                <span>Close Player</span>
+              </button>
+
+              <div className="border-t border-zinc-900 pt-6">
+                <span className="text-zinc-500 font-bold uppercase text-[10px] tracking-wider block mb-2">Streaming Now</span>
+                <h2 className="text-white text-xl font-black tracking-tight">{item.title || item.name}</h2>
+                <p className="text-xs text-zinc-500 mt-1 capitalize">{item.type || 'Movie'}</p>
+                {(item.type === 'tv' || item.media_type === 'tv') && (
+                  <p className="text-xs text-purple-400 font-bold mt-1">S{season} E{episode}</p>
+                )}
+              </div>
+
+              {!isTrailer && (
+                <div className="space-y-3">
+                  <span className="text-zinc-500 font-bold uppercase text-[10px] tracking-wider block">Select Server</span>
+                  
+                  <button onClick={() => handleServerChange('server1')} className={`w-full text-left p-3.5 rounded-xl border flex items-center justify-between font-bold text-sm transition-all ${activeServer === 'server1' ? 'bg-purple-600/10 border-purple-500/50 text-purple-400 shadow-lg' : 'bg-[#11111b] border-zinc-850 text-zinc-400 hover:border-zinc-800'}`}>
+                    <div className="flex items-center gap-3"><i data-lucide="server" className="w-4 h-4"></i><span>VidPlus Premium</span></div>
+                    <span className="text-[10px] px-2 py-0.5 rounded font-bold uppercase bg-purple-500/20 text-purple-400">Fast</span>
+                  </button>
+
+                  <button onClick={() => handleServerChange('server2')} className={`w-full text-left p-3.5 rounded-xl border flex items-center justify-between font-bold text-sm transition-all ${activeServer === 'server2' ? 'bg-purple-600/10 border-purple-500/50 text-purple-400 shadow-lg' : 'bg-[#11111b] border-zinc-850 text-zinc-400 hover:border-zinc-800'}`}>
+                    <div className="flex items-center gap-3"><i data-lucide="server" className="w-4 h-4"></i><span>EmbedMaster HD</span></div>
+                    <span className="text-[10px] px-2 py-0.5 rounded font-bold uppercase bg-purple-500/20 text-purple-400">VIP</span>
+                  </button>
+
+                  <button onClick={() => handleServerChange('server3')} className={`w-full text-left p-3.5 rounded-xl border flex items-center justify-between font-bold text-sm transition-all ${activeServer === 'server3' ? 'bg-purple-600/10 border-purple-500/50 text-purple-400 shadow-lg' : 'bg-[#11111b] border-zinc-850 text-zinc-400 hover:border-zinc-800'}`}>
+                    <div className="flex items-center gap-3"><i data-lucide="server" className="w-4 h-4"></i><span>VidLink Pro</span></div>
+                    <span className="text-[10px] px-2 py-0.5 rounded font-bold uppercase bg-purple-500/20 text-purple-400">HD</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* PLAYER */}
+          <div className="flex-1 relative bg-black w-full h-full flex items-center justify-center">
+            {loading ? (
+               <div className="w-16 h-16 border-4 border-zinc-800 border-t-purple-500 rounded-full animate-spin"></div>
+            ) : isTrailer && trailerKey === 'error' ? (
+               <div className="text-center text-zinc-500 max-w-sm px-4">
+                 <i data-lucide="search" className="mx-auto mb-4 text-zinc-700 w-12 h-12"></i>
+                 <h2 className="text-xl font-bold text-white mb-2">Trailer Unavailable</h2>
+                 <p className="text-sm leading-relaxed">No promotional trailer tracks could be found.</p>
+               </div>
+            ) : (
+               <iframe 
+                 src={getEmbedUrl()}
+                 className="w-full h-full border-none absolute inset-0"
+                 allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
+                 allowFullScreen
+               ></iframe>
+            )}
+          </div>
+
+          {/* EPISODE LIST (TV Only) */}
+          {(item.type === 'tv' || item.media_type === 'tv') && tvDetails && (
+            <div className="w-full md:w-80 bg-[#0b0b11] border-t md:border-t-0 md:border-l border-zinc-900 flex flex-col h-80 md:h-full z-20 overflow-hidden">
+              <div className="p-4 border-b border-zinc-900 bg-[#0e0e16]">
+                <div className="font-bold text-sm text-white mb-2">Episodes • Season {currentSeason}</div>
+                <select 
+                  value={currentSeason} 
+                  onChange={(e) => setCurrentSeason(Number(e.target.value))}
+                  className="bg-[#151522] border border-zinc-800 text-white text-sm w-full p-2 rounded-xl"
+                >
+                  {tvDetails.seasons?.filter(s => s.season_number > 0).map(s => (
+                    <option key={s.id} value={s.season_number}>Season {s.season_number}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="flex-1 overflow-y-auto p-3 space-y-2 scrollbar-hide">
+                {episodes.map(ep => (
+                  <div 
+                    key={ep.id}
+                    onClick={() => {
+                      // Switch episode in player
+                      window.location.reload(); // Simple refresh for demo (you can improve this)
+                    }}
+                    className={`p-3 rounded-xl flex gap-3 cursor-pointer hover:bg-zinc-900 transition ${episode === ep.episode_number ? 'bg-purple-900/30 border border-purple-500' : 'bg-[#11111b]'}`}
+                  >
+                    <div className="w-20 h-12 bg-zinc-800 rounded-lg overflow-hidden shrink-0">
+                      {ep.still_path && <img src={`https://image.tmdb.org/t/p/w200${ep.still_path}`} className="w-full h-full object-cover" />}
+                    </div>
+                    <div className="flex-1 text-xs">
+                      <div className="font-medium text-white">{ep.episode_number}. {ep.name}</div>
+                      <div className="text-zinc-500 line-clamp-2 mt-0.5">{ep.overview}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // Render App Root
+    const container = document.getElementById('root');
+    const root = ReactDOM.createRoot(container);
+    root.render(<App />);
+  </script>
 </body>
 </html>
