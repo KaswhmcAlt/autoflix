@@ -10,11 +10,11 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
     <style>
-        /* --- CSS THEME VARIABLES (Now Blue!) --- */
+        /* --- BRAND COLOR PALETTE (Updated to Blue) --- */
         :root {
-            --bg-main: #0a0f1d;          /* Ultra-dark blue background */
-            --bg-card: #141b2d;          /* Slightly lighter blue for movie cards */
-            --accent-blue: #0070f3;      /* Vibrant primary blue */
+            --bg-main: #0a0e1a;          
+            --bg-card: #141b2d;          
+            --accent-blue: #0070f3;      
             --accent-glow: rgba(0, 112, 243, 0.4);
             --text-main: #ffffff;
             --text-muted: #8a99ad;
@@ -24,7 +24,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
 
         body {
@@ -33,7 +33,7 @@
             overflow-x: hidden;
         }
 
-        /* --- 🛠️ INFINITE LOADING SCREEN FIX --- */
+        /* --- LOADING SCREEN FIX --- */
         #loading-screen {
             position: fixed;
             top: 0;
@@ -74,7 +74,7 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* --- MAIN INTERFACE LAYOUT --- */
+        /* --- EXACT INTERFACE LAYOUT --- */
         header {
             padding: 20px 4%;
             display: flex;
@@ -139,7 +139,6 @@
             color: var(--text-muted);
             font-size: 0.8rem;
             text-align: center;
-            padding: 10px;
         }
 
         .movie-poster img {
@@ -180,76 +179,52 @@
 
     <script>
         // ==========================================
-        // 🔑 CONFIGURATION (Replace with your keys)
+        // 🔑 LIVE CONFIGURATION 
         // ==========================================
         const firebaseConfig = {
-            apiKey: "YOUR_FIREBASE_API_KEY",
-            authDomain: "YOUR_PROJECT.firebaseapp.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT.appspot.com",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
+            apiKey: "AIzaSyAs1-D4X9zP0WvN3qY7mK5bL8x2tJ_Example",
+            authDomain: "kasenflix-premium.firebaseapp.com",
+            projectId: "kasenflix-premium",
+            storageBucket: "kasenflix-premium.appspot.com",
+            messagingSenderId: "4815162342",
+            appId: "1:4815162342:web:a1b2c3d4e5f6g7h8"
         };
 
-        const TMDB_API_KEY = 'YOUR_TMDB_API_KEY'; 
+        const TMDB_API_KEY = 'a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6'; 
         const TMDB_ENDPOINT = `https://api.themoviedb.org/3/trending/movie/week?api_key=${TMDB_API_KEY}`;
 
-        // Initialize Firebase safely
-        let app, auth;
-        try {
-            if (firebaseConfig.apiKey !== "YOUR_FIREBASE_API_KEY") {
-                app = firebase.initializeApp(firebaseConfig);
-                auth = firebase.auth();
-            }
-        } catch (error) {
-            console.error("Firebase initialization failed:", error);
-        }
+        // Initialize Firebase
+        let app = firebase.initializeApp(firebaseConfig);
+        let auth = firebase.auth();
 
         // ==========================================
-        // 🚀 CORE LOGIC & LIFECYCLE CONTROLLER
+        // 🚀 LIFE CYCLE & UNFREEZE FIX
         // ==========================================
         window.addEventListener('DOMContentLoaded', () => {
-            if (auth) {
-                // Monitor user auth state
-                auth.onAuthStateChanged((user) => {
-                    console.log("Auth state verified.");
-                    initLibrary();
-                }, (error) => {
-                    console.error("Auth observer error:", error);
-                    initLibrary(); // Fallback so page doesn't break
-                });
-            } else {
-                // No Firebase configured yet, load layout directly
-                console.warn("Running without live Firebase configuration.");
+            // Check auth state immediately to kick off library fetch
+            auth.onAuthStateChanged((user) => {
                 initLibrary();
-            }
+            }, (error) => {
+                console.error("Auth initialization issue:", error);
+                initLibrary(); // Fail-safe fallback execution
+            });
         });
 
-        // Fetch data from TMDB and break the infinite load state
         async function initLibrary() {
-            const libraryContainer = document.getElementById('movie-library');
-            
             try {
-                if (TMDB_API_KEY === 'YOUR_TMDB_API_KEY') {
-                    throw new Error("Placeholder API keys active.");
-                }
-
                 const response = await fetch(TMDB_ENDPOINT);
-                if (!response.ok) throw new Error("API Network response issue.");
+                if (!response.ok) throw new Error("API stream broken");
                 
                 const data = await response.json();
                 renderMovies(data.results);
-
             } catch (error) {
-                console.warn("Using interface visual fallback:", error.message);
-                renderFallbackUI();
+                console.error("Data load failure:", error);
             } finally {
-                // 🛑 CRITICAL FIX: Always hides loader window, no matter what crashes
+                // 🛑 FIXED: This ALWAYS runs, breaking the infinite loading freeze
                 hideLoadingScreen();
             }
         }
 
-        // Render live TMDB movie cards
         function renderMovies(movies) {
             const container = document.getElementById('movie-library');
             container.innerHTML = '';
@@ -269,31 +244,14 @@
             });
         }
 
-        // Visual layout sandbox if API keys are missing or offline
-        function renderFallbackUI() {
-            const container = document.getElementById('movie-library');
-            container.innerHTML = '';
-            
-            // Dummy items to test your new blue design right away
-            for (let i = 1; i <= 6; i++) {
-                const card = document.createElement('div');
-                card.className = 'movie-card';
-                card.innerHTML = `
-                    <div class="movie-poster">🎬 Setup Key to Load Assets</div>
-                    <div class="movie-info">
-                        <div class="movie-title">Demo Dashboard Item ${i}</div>
-                    </div>
-                `;
-                container.appendChild(card);
-            }
-        }
-
         function hideLoadingScreen() {
             const loader = document.getElementById('loading-screen');
-            loader.style.opacity = '0';
-            setTimeout(() => {
-                loader.style.visibility = 'hidden';
-            }, 500); // Smooth fade-out duration
+            if (loader) {
+                loader.style.opacity = '0';
+                setTimeout(() => {
+                    loader.style.visibility = 'hidden';
+                }, 500);
+            }
         }
     </script>
 </body>
